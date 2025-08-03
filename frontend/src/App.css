@@ -1,0 +1,33 @@
+/* App.css */
+
+/* 🔹 Global Container for Pages */
+.home-container {
+  @apply bg-gradient-to-b from-sky-50 to-white p-6 rounded-xl text-center shadow-md;
+}
+
+/* 🔹 Typography */
+h1, h2 {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h1 {
+  font-size: 2.25rem;
+  color: #1e3a8a; /* Tailwind blue-900 */
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 1.5rem;
+  color: #334155; /* Tailwind slate-700 */
+  font-weight: 600;
+}
+
+/* 🔹 Buttons (only if needed outside Tailwind) */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+/* 🔹 Footer Styling */
+.footer {
+  @apply text-center text-sm text-gray-500 py-4 border-t mt-10;
+}
