@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/professional-networking-platform/static/css/main.8fc1e80b.css",
-    "main.js": "/professional-networking-platform/static/js/main.bc80430e.js",
+    "main.js": "/professional-networking-platform/static/js/main.1586b598.js",
     "index.html": "/professional-networking-platform/index.html",
     "main.8fc1e80b.css.map": "/professional-networking-platform/static/css/main.8fc1e80b.css.map",
-    "main.bc80430e.js.map": "/professional-networking-platform/static/js/main.bc80430e.js.map"
+    "main.1586b598.js.map": "/professional-networking-platform/static/js/main.1586b598.js.map"
   },
   "entrypoints": [
     "static/css/main.8fc1e80b.css",
-    "static/js/main.bc80430e.js"
+    "static/js/main.1586b598.js"
   ]
 }
