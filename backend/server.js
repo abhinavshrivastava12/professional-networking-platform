@@ -1,3 +1,4 @@
+// 📁 server.js
 const express = require("express");
 const http = require("http");
 const cors = require("cors");
@@ -10,49 +11,50 @@ connectDB();
 
 const app = express();
 
-// ✅ Properly allow both frontend origins
+// ✅ Allowed frontend origins
 const allowedOrigins = [
   "https://abhinavshrivastava12.github.io",
   "http://localhost:3000"
 ];
 
-// ✅ CORS middleware
+// ✅ CORS configuration
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.error("❌ Blocked by CORS:", origin);
-      callback(new Error("Not allowed by CORS"));
+      callback(new Error("❌ Not allowed by CORS"));
     }
   },
-  credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"]
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+app.options("*", cors(corsOptions)); // ✅ Handle preflight
 app.use(express.json());
 
-// ✅ Health check
+// ✅ Base route
 app.get("/", (req, res) => {
-  res.send("✅ API is live!");
+  res.send("🟢 API is working!");
 });
 
-// ✅ Routes
+// ✅ All API routes
 const routes = require("./routes");
 app.use("/api", routes);
 
-// ✅ Socket server
+// ✅ HTTP server for Socket.io
 const server = http.createServer(app);
+
+// ✅ Socket.io setup (Render-safe with polling only)
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
-    credentials: true,
-    methods: ["GET", "POST"]
+    methods: ["GET", "POST"],
+    credentials: true
   },
-  transports: ["polling"] // use polling to avoid WebSocket errors on free tier
+  transports: ["polling"] // ✅ Force polling, disable WebSocket
 });
 
 io.on("connection", (socket) => {
@@ -72,13 +74,12 @@ io.on("connection", (socket) => {
   });
 });
 
-// ✅ Start server
+// 🚀 Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
 
-// 🔁 Heartbeat
 setInterval(() => {
   console.log("💓 Server heartbeat...");
 }, 30000);
