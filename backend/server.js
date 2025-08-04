@@ -10,54 +10,51 @@ connectDB();
 
 const app = express();
 
-// ✅ Allowed Origins for CORS
+// ✅ Properly allow both frontend origins
 const allowedOrigins = [
   "https://abhinavshrivastava12.github.io",
   "http://localhost:3000"
 ];
 
-// ✅ CORS Setup
+// ✅ CORS middleware
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log("❌ CORS Blocked Origin:", origin);
+      console.error("❌ Blocked by CORS:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // Preflight support
 
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(express.json());
 
-// ✅ Test Route
+// ✅ Health check
 app.get("/", (req, res) => {
-  res.send("🟢 API is working!");
+  res.send("✅ API is live!");
 });
 
-// ✅ All API Routes
+// ✅ Routes
 const routes = require("./routes");
 app.use("/api", routes);
 
-// ✅ Create server for socket.io
+// ✅ Socket server
 const server = http.createServer(app);
-
-// ✅ Socket.io config (Render-safe: polling only)
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
-    methods: ["GET", "POST"],
-    credentials: true
+    credentials: true,
+    methods: ["GET", "POST"]
   },
-  transports: ["polling"] // ✅ Safe for Render
+  transports: ["polling"] // use polling to avoid WebSocket errors on free tier
 });
 
-// ✅ Socket logic
 io.on("connection", (socket) => {
   console.log("🔌 Socket connected:", socket.id);
 
