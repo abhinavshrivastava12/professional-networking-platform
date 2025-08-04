@@ -9,6 +9,7 @@ const uploadRoutes = require("./upload");
 const jobRoutes = require("./job");
 const messageRoutes = require("./message");
 
+// ✅ Mount API routes
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
 router.use("/posts", postRoutes);
@@ -17,12 +18,12 @@ router.use("/upload", uploadRoutes);
 router.use("/jobs", jobRoutes);
 router.use("/messages", messageRoutes);
 
-// ✅ Health check
+// ✅ Health check route
 router.get("/", (req, res) => {
-  res.status(200).json({ message: "✅ API is live" });
+  res.status(200).json({ message: "✅ API is live and running fine!" });
 });
 
-// ❌ Fallback route
+// ✅ 404 fallback handler (for unmatched API routes)
 router.use("*", (req, res) => {
   res.status(404).json({ error: "❌ API route not found" });
 });

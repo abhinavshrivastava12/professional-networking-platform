@@ -1,25 +1,29 @@
-// 📁 backend/routes/auth.js
 const express = require("express");
 const router = express.Router();
 
-// Dummy login logic for test
+// ✅ POST /api/auth/login
 router.post("/login", (req, res) => {
   const { email, password } = req.body;
 
-  // In real app: validate from DB
-  if (email === "test@example.com" && password === "123456") {
-    return res.json({
-      user: { name: "Test User", email },
-      token: "mock-token-123",
-    });
+  if (!email || !password) {
+    return res.status(400).json({ msg: "Missing credentials" });
   }
 
-  return res.status(401).json({ msg: "Invalid credentials" });
+  // Accept any email/password (mock login)
+  return res.status(200).json({
+    user: { name: "Demo User", email },
+    token: "mock-token-123",
+  });
 });
 
+// ✅ POST /api/auth/register
 router.post("/register", (req, res) => {
   const { name, email, password } = req.body;
-  // Normally you'd save to DB here
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ msg: "All fields are required" });
+  }
+
   return res.status(201).json({
     user: { name, email },
     msg: "User registered successfully",
