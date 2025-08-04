@@ -6,10 +6,12 @@
   "scripts": {
     "start": "npm run seed && node server.js",
     "dev": "nodemon server.js",
-    "seeduser": "node seeduser.js",
-    "seedall": "node seedall.js",
-    "seed": "npm run seedall"
-  },
+    "seedUser": "node scripts/seedUser.js",
+    "seedAll": "node scripts/seedAll.js",
+    "seed": "npm run seedAll"
+
+
+    },
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cloudinary": "^1.30.0",

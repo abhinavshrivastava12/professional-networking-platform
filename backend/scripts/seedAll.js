@@ -3,11 +3,11 @@
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
-const connectDB = require("./config/db");
-const User = require("./models/User");
-const Post = require("./models/Post");
-const Job = require("./models/Job");
-const Message = require("./models/Message");
+const connectDB = require("../config/db");
+const User = require("../models/User");
+const Post = require("../models/Post");
+const Job = require("../models/Job");
+const Message = require("../models/Message");
 
 dotenv.config();
 connectDB();

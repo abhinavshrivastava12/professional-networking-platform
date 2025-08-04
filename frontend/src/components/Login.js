@@ -13,14 +13,27 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) return toast.error("Please enter both email and password");
+
+    if (!email || !password) {
+      toast.error("❗ Please enter both email and password");
+      return;
+    }
 
     try {
       const res = await dispatch(loginUser({ email, password })).unwrap();
-      toast.success(`Welcome, ${res.user.name}!`);
+      toast.success(`✅ Welcome, ${res.user.name}!`);
       navigate("/feed");
     } catch (err) {
-      toast.error(err || "Login failed. Check credentials.");
+      console.error("Login error:", err);
+      if (err?.msg === "Invalid credentials") {
+        toast.error("❌ Incorrect email or password");
+      } else if (err?.response?.status === 404) {
+        toast.error("❌ Server not found (404)");
+      } else if (err?.response?.status === 401) {
+        toast.error("❌ Unauthorized (401)");
+      } else {
+        toast.error("⚠️ Login failed. Try again.");
+      }
     }
   };
 

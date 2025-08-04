@@ -1,5 +1,3 @@
-// src/pages/JobBoard.js
-
 import React, { useState, useEffect, useCallback } from "react";
 import api from "../utils/axios";
 import { useSelector } from "react-redux";
@@ -16,16 +14,16 @@ const JobBoard = () => {
     location: "",
   });
 
-  // ✅ Fetch all jobs + saved jobs
+  // ✅ Fetch Jobs + Saved
   const fetchJobs = useCallback(async () => {
     try {
       const res = await api.get("/jobs", {
-        headers: { Authorization: `Bearer ${token}` }, // ✅ FIXED
+        headers: { Authorization: `Bearer ${token}` },
       });
-      setJobs(res.data);
+      setJobs(res.data || []);
 
       const saved = await api.get("/jobs/saved", {
-        headers: { Authorization: `Bearer ${token}` }, // ✅ FIXED
+        headers: { Authorization: `Bearer ${token}` },
       });
       setSavedJobs(saved.data.map((j) => j._id));
     } catch (err) {
@@ -42,8 +40,12 @@ const JobBoard = () => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // ✅ Post new job
+  // ✅ Post a job
   const handlePost = async () => {
+    if (!formData.title || !formData.description || !formData.skills) {
+      return toast.error("Please fill in all required fields.");
+    }
+
     try {
       const jobData = {
         ...formData,
@@ -51,7 +53,7 @@ const JobBoard = () => {
       };
 
       await api.post("/jobs", jobData, {
-        headers: { Authorization: `Bearer ${token}` }, // ✅ FIXED
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       toast.success("✅ Job posted!");
@@ -63,10 +65,11 @@ const JobBoard = () => {
     }
   };
 
+  // ✅ Apply
   const handleApply = async (jobId) => {
     try {
       const res = await api.post(`/jobs/apply/${jobId}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }, // ✅ FIXED
+        headers: { Authorization: `Bearer ${token}` },
       });
       toast.success(res.data.msg || "Applied!");
       fetchJobs();
@@ -76,10 +79,11 @@ const JobBoard = () => {
     }
   };
 
+  // ✅ Save Job
   const handleSave = async (jobId) => {
     try {
       const res = await api.put(`/jobs/save/${jobId}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }, // ✅ FIXED
+        headers: { Authorization: `Bearer ${token}` },
       });
       toast.success(res.data.msg || "Saved!");
       fetchJobs();
@@ -91,7 +95,7 @@ const JobBoard = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      {/* Job Post Form */}
+      {/* ➕ Job Form */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-2xl font-bold mb-4 text-blue-600">🚀 Post a Job</h2>
         <div className="grid gap-4">
@@ -101,7 +105,7 @@ const JobBoard = () => {
             value={formData.title}
             onChange={handleChange}
             placeholder="Job Title"
-            className="input"
+            className="input border border-gray-300 dark:border-gray-600 p-2 rounded"
           />
           <textarea
             name="description"
@@ -109,7 +113,7 @@ const JobBoard = () => {
             onChange={handleChange}
             placeholder="Job Description"
             rows={3}
-            className="input"
+            className="input border border-gray-300 dark:border-gray-600 p-2 rounded"
           />
           <input
             type="text"
@@ -117,7 +121,7 @@ const JobBoard = () => {
             value={formData.skills}
             onChange={handleChange}
             placeholder="Skills (comma separated)"
-            className="input"
+            className="input border border-gray-300 dark:border-gray-600 p-2 rounded"
           />
           <input
             type="text"
@@ -125,7 +129,7 @@ const JobBoard = () => {
             value={formData.location}
             onChange={handleChange}
             placeholder="Location"
-            className="input"
+            className="input border border-gray-300 dark:border-gray-600 p-2 rounded"
           />
           <button
             onClick={handlePost}
@@ -136,13 +140,13 @@ const JobBoard = () => {
         </div>
       </div>
 
-      {/* Job Listings */}
+      {/* 🧾 Job List */}
       <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">💼 Job Listings</h2>
       {jobs.length === 0 ? (
         <p className="text-gray-500 text-center">No jobs available.</p>
       ) : (
         jobs.map((job) => {
-          const isApplied = job.applicants.includes(user._id);
+          const isApplied = job.applicants?.includes(user._id);
           const isSaved = savedJobs.includes(job._id);
 
           return (
@@ -160,7 +164,7 @@ const JobBoard = () => {
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 🛠️ Skills:{" "}
                 <span className="text-gray-800 dark:text-gray-200">
-                  {job.skills.join(", ")}
+                  {job.skills?.join(", ")}
                 </span>
               </div>
 

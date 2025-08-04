@@ -14,15 +14,16 @@ const Messages = () => {
   const [messages, setMessages] = useState([]);
   const bottomRef = useRef(null);
 
-  // Scroll to bottom on new message
+  // 🔽 Auto-scroll to latest message
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Join room and listen to socket
+  // 🔌 Join socket room
   useEffect(() => {
     if (user?._id) {
       socket.emit("join", user._id);
+
       socket.on("receive_message", (msg) => {
         setMessages((prev) => [
           ...prev,
@@ -46,10 +47,12 @@ const Messages = () => {
     };
 
     socket.emit("send_message", data);
+
     setMessages((prev) => [
       ...prev,
       { text, sender: "me", from: user._id, timestamp: Date.now() },
     ]);
+
     setText("");
   };
 
@@ -64,13 +67,13 @@ const Messages = () => {
 
   return (
     <div className="max-w-md mx-auto flex flex-col h-[600px] bg-white rounded-lg shadow-lg border border-gray-300 mt-10">
-      {/* Header */}
+      {/* 🔵 Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 rounded-t-lg text-white">
         <h2 className="text-lg font-semibold flex items-center gap-2">💬 Messages</h2>
         <div className="text-sm opacity-75">You</div>
       </div>
 
-      {/* Receiver Input */}
+      {/* 👤 Receiver Input */}
       <div className="p-4 border-b border-gray-200 bg-white">
         <input
           type="text"
@@ -81,11 +84,8 @@ const Messages = () => {
         />
       </div>
 
-      {/* Messages Container */}
-      <div
-        className="flex-1 overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-gray-50 to-gray-100"
-        style={{ scrollbarWidth: "thin" }}
-      >
+      {/* 💬 Chat Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-gray-50 to-gray-100">
         {messages.map((m, i) => (
           <div
             key={i}
@@ -137,7 +137,7 @@ const Messages = () => {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input Area */}
+      {/* ✏️ Input Field */}
       <div className="border-t border-gray-200 p-4 bg-white flex items-center gap-3 rounded-b-lg">
         <input
           type="text"

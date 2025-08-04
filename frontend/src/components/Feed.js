@@ -12,12 +12,13 @@ const Feed = () => {
   const [loading, setLoading] = useState(false);
   const topRef = useRef();
 
+  // ✅ Fetch posts
   const fetchFeed = useCallback(async () => {
     try {
       const res = await api.get("/posts/feed", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setPosts(res.data);
+      setPosts(res.data || []);
     } catch (err) {
       console.error("❌ Feed Fetch Error:", err);
       toast.error("Failed to load feed");
@@ -25,9 +26,10 @@ const Feed = () => {
   }, [token]);
 
   useEffect(() => {
-    fetchFeed();
-  }, [fetchFeed]);
+    if (token) fetchFeed();
+  }, [fetchFeed, token]);
 
+  // ✅ Post creation
   const handlePost = async () => {
     if (!content && !image) return toast.error("Post content or image required");
     setLoading(true);
@@ -38,7 +40,10 @@ const Feed = () => {
         const formData = new FormData();
         formData.append("image", image);
         const res = await api.post("/upload/image", formData, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         });
         imageUrl = res.data.url;
       }
@@ -49,13 +54,14 @@ const Feed = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      toast.success("Post created!");
+      toast.success("🎉 Post created!");
       setContent("");
       setImage(null);
       setPreview("");
       fetchFeed();
       topRef.current?.scrollIntoView({ behavior: "smooth" });
-    } catch {
+    } catch (err) {
+      console.error("Post Error:", err);
       toast.error("Error creating post");
     } finally {
       setLoading(false);
@@ -68,7 +74,7 @@ const Feed = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchFeed();
-    } catch {
+    } catch (err) {
       toast.error("Error liking post");
     }
   };
@@ -80,7 +86,7 @@ const Feed = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchFeed();
-    } catch {
+    } catch (err) {
       toast.error("Error commenting");
     }
   };
@@ -90,9 +96,9 @@ const Feed = () => {
       await api.post(`/posts/repost/${postId}`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      toast.success("Reposted!");
+      toast.success("🔁 Reposted!");
       fetchFeed();
-    } catch {
+    } catch (err) {
       toast.error("Repost failed");
     }
   };
@@ -115,7 +121,7 @@ const Feed = () => {
     <div className="max-w-2xl mx-auto p-4">
       <div ref={topRef} />
 
-      {/* Create Post */}
+      {/* ➕ Create Post */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-6">
         <textarea
           value={content}
@@ -148,7 +154,7 @@ const Feed = () => {
         </button>
       </div>
 
-      {/* Posts List */}
+      {/* 📝 Posts List */}
       {posts.length === 0 ? (
         <div className="text-center text-gray-500 mt-10">No posts to show.</div>
       ) : (
@@ -176,7 +182,7 @@ const Feed = () => {
                 onClick={() => handleLike(post._id)}
                 className="flex items-center gap-1 hover:text-indigo-600 transition"
               >
-                👍 <span>{post.likes.length}</span>
+                👍 <span>{post.likes?.length || 0}</span>
               </button>
               <button
                 onClick={() => handleRepost(post._id)}
@@ -186,7 +192,7 @@ const Feed = () => {
               </button>
             </div>
 
-            {/* Comments */}
+            {/* 💬 Comments */}
             <CommentBox postId={post._id} handleComment={handleComment} />
             <div className="mt-3 space-y-2 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-400 scrollbar-track-gray-200">
               {post.comments.map((c, i) => (
