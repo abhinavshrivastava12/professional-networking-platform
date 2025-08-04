@@ -68,12 +68,22 @@ const Connections = () => {
     );
 
   const renderButton = (id) => {
-    if (connections.includes(id)) return <span className="text-green-600">✅ Connected</span>;
-    if (pending.includes(id)) return <span className="text-yellow-600">⏳ Pending</span>;
+    if (connections.includes(id))
+      return (
+        <span className="inline-flex items-center gap-1 text-green-600 font-semibold">
+          ✅ Connected
+        </span>
+      );
+    if (pending.includes(id))
+      return (
+        <span className="inline-flex items-center gap-1 text-yellow-600 font-semibold">
+          ⏳ Pending
+        </span>
+      );
     return (
       <button
         onClick={() => handleConnect(id)}
-        className="btn-secondary text-sm"
+        className="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition"
       >
         Connect
       </button>
@@ -81,31 +91,44 @@ const Connections = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-4">
-      <h2 className="section-title">🔗 Connections</h2>
+    <div className="max-w-3xl mx-auto p-6">
+      <h2 className="text-3xl font-extrabold text-center mb-6 text-indigo-700 tracking-wide">
+        🔗 Connections
+      </h2>
+
       <input
         type="text"
         value={search}
-        placeholder="Search users..."
+        placeholder="Search users by name or email..."
         onChange={(e) => setSearch(e.target.value)}
-        className="input mb-4"
+        className="w-full mb-6 px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition shadow-sm"
       />
 
       {filteredUsers.length === 0 ? (
-        <p className="text-center text-gray-500">No users found</p>
+        <p className="text-center text-gray-500 text-lg mt-12">
+          No users found
+        </p>
       ) : (
-        filteredUsers.map((u) => (
-          <div
-            key={u._id}
-            className="bg-white rounded p-4 mb-3 shadow flex justify-between items-center"
-          >
-            <div>
-              <h4 className="font-semibold">{u.name}</h4>
-              <p className="text-sm text-gray-500">{u.email}</p>
+        <div className="space-y-4">
+          {filteredUsers.map((u) => (
+            <div
+              key={u._id}
+              className="bg-white rounded-xl p-5 flex items-center justify-between shadow-md hover:shadow-lg transition"
+            >
+              <div className="flex items-center gap-4">
+                {/* Avatar circle with initials */}
+                <div className="w-12 h-12 rounded-full bg-indigo-500 text-white flex items-center justify-center text-xl font-bold select-none">
+                  {u.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-800">{u.name}</h4>
+                  <p className="text-sm text-gray-500">{u.email}</p>
+                </div>
+              </div>
+              <div>{renderButton(u._id)}</div>
             </div>
-            {renderButton(u._id)}
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );

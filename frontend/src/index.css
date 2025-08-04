@@ -2,9 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 🔹 Custom Utility Classes */
+/* 🔹 Global Text & Background for Dark Mode */
+body {
+  @apply text-gray-800 dark:text-white bg-white dark:bg-gray-900;
+}
 
-/* Input Field Styling */
+/* 🔹 Input Field Styling */
 .input {
   @apply w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
          bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 
@@ -12,7 +15,7 @@
          transition duration-200;
 }
 
-/* Primary Button */
+/* 🔹 Primary Button */
 .btn-primary {
   @apply w-full bg-blue-600 hover:bg-blue-700 text-white 
          py-2 px-4 rounded-md font-semibold 
@@ -20,33 +23,38 @@
          transition duration-200;
 }
 
-/* Secondary Button */
+/* 🔹 Secondary Button */
 .btn-secondary {
   @apply bg-gray-100 hover:bg-gray-200 text-gray-800 
          dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 
          px-4 py-2 rounded-md transition duration-200;
 }
 
-/* Card Component */
+/* 🔹 Card Component */
 .card {
   @apply bg-white dark:bg-gray-800 p-6 rounded-xl 
          shadow hover:shadow-lg 
          transition-all duration-300;
 }
 
-/* Section Title */
+/* 🔹 Section Title */
 .section-title {
   @apply text-3xl font-bold text-gray-800 dark:text-white 
          mb-6 text-center tracking-tight;
 }
 
-/* Link Styling */
+/* 🔹 Link Styling */
 .link {
   @apply text-blue-600 dark:text-yellow-400 
          hover:underline transition duration-150;
 }
 
-/* Responsive Container */
+/* 🔹 Responsive Container */
 .container {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* 🔹 Fix for gradient background in dark mode */
+.dark .home-container {
+  @apply bg-gradient-to-b from-gray-900 to-gray-800;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import io from "socket.io-client";
 
@@ -6,16 +6,16 @@ const socket = io(process.env.REACT_APP_SOCKET_URL || "http://localhost:5000");
 
 const Messages = () => {
   const { user } = useSelector((state) => state.user);
-  const [receiverId, setReceiverId] = useState(""); // 👈 Input receiver manually for now
+  const [receiverId, setReceiverId] = useState("");
   const [text, setText] = useState("");
   const [messages, setMessages] = useState([]);
+  const bottomRef = useRef(null);
 
   useEffect(() => {
     if (user?._id) {
       socket.emit("join", user._id);
-
       socket.on("receive_message", (msg) => {
-        setMessages((prev) => [...prev, msg]);
+        setMessages((prev) => [...prev, { ...msg, self: false }]);
       });
     }
 
@@ -24,8 +24,12 @@ const Messages = () => {
     };
   }, [user]);
 
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   const sendMessage = () => {
-    if (!receiverId || !text) return;
+    if (!receiverId || !text.trim()) return;
 
     const data = {
       senderId: user._id,
@@ -39,35 +43,53 @@ const Messages = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h2 className="text-xl font-bold mb-4">💬 Real-Time Messages</h2>
+    <div className="max-w-xl mx-auto mt-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+      <h2 className="text-2xl font-bold mb-4 text-center text-blue-600">💬 Real-Time Messaging</h2>
 
       <input
         type="text"
         value={receiverId}
         onChange={(e) => setReceiverId(e.target.value)}
-        placeholder="Enter receiver userId"
-        className="input mb-2"
+        placeholder="Enter receiver's user ID"
+        className="w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
-      <div className="border p-4 rounded h-64 overflow-y-auto bg-gray-50 mb-2">
+
+      <div className="h-72 overflow-y-auto bg-gray-100 rounded-lg p-3 space-y-2">
         {messages.map((m, i) => (
           <div
             key={i}
-            className={`text-sm mb-1 ${m.self ? "text-right text-blue-600" : "text-left text-gray-800"}`}
+            className={`flex ${
+              m.self ? "justify-end" : "justify-start"
+            } transition-all`}
           >
-            {m.text}
+            <div
+              className={`max-w-xs px-4 py-2 rounded-lg shadow ${
+                m.self
+                  ? "bg-blue-500 text-white rounded-br-none"
+                  : "bg-white border border-gray-300 text-gray-800 rounded-bl-none"
+              }`}
+            >
+              <p className="text-sm">{m.text}</p>
+            </div>
           </div>
         ))}
+        <div ref={bottomRef} />
       </div>
 
-      <div className="flex gap-2">
+      <div className="mt-4 flex gap-2">
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Type message..."
-          className="flex-1 border rounded p-2"
+          placeholder="Type a message..."
+          className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
-        <button className="btn-primary" onClick={sendMessage}>Send</button>
+        <button
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition"
+          onClick={sendMessage}
+        >
+          Send
+        </button>
       </div>
     </div>
   );

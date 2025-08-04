@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import api from "../utils/axios";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
@@ -11,27 +11,24 @@ const JobBoard = () => {
     title: "",
     description: "",
     skills: "",
-    location: ""
+    location: "",
   });
 
-  const API = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
-
-  // ✅ Optimized fetch function
   const fetchJobs = useCallback(async () => {
     try {
-      const res = await axios.get(`${API}/jobs`, {
+      const res = await api.get("/jobs", {
         headers: { Authorization: token },
       });
       setJobs(res.data);
 
-      const saved = await axios.get(`${API}/jobs/saved`, {
+      const saved = await api.get("/jobs/saved", {
         headers: { Authorization: token },
       });
       setSavedJobs(saved.data.map((j) => j._id));
     } catch {
       toast.error("Error loading jobs");
     }
-  }, [API, token]);
+  }, [token]);
 
   useEffect(() => {
     fetchJobs();
@@ -48,11 +45,11 @@ const JobBoard = () => {
         skills: formData.skills.split(",").map((s) => s.trim()),
       };
 
-      await axios.post(`${API}/jobs`, jobData, {
+      await api.post("/jobs", jobData, {
         headers: { Authorization: token },
       });
 
-      toast.success("Job posted");
+      toast.success("✅ Job posted!");
       setFormData({ title: "", description: "", skills: "", location: "" });
       fetchJobs();
     } catch {
@@ -62,7 +59,7 @@ const JobBoard = () => {
 
   const handleApply = async (jobId) => {
     try {
-      const res = await axios.post(`${API}/jobs/apply/${jobId}`, {}, {
+      const res = await api.post(`/jobs/apply/${jobId}`, {}, {
         headers: { Authorization: token },
       });
       toast.success(res.data.msg);
@@ -74,7 +71,7 @@ const JobBoard = () => {
 
   const handleSave = async (jobId) => {
     try {
-      const res = await axios.put(`${API}/jobs/save/${jobId}`, {}, {
+      const res = await api.put(`/jobs/save/${jobId}`, {}, {
         headers: { Authorization: token },
       });
       toast.success(res.data.msg);
@@ -85,76 +82,107 @@ const JobBoard = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">Post a Job</h2>
-      <div className="bg-white p-4 rounded shadow mb-6 space-y-3">
-        <input
-          type="text"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          placeholder="Job Title"
-          className="input"
-        />
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          placeholder="Job Description"
-          className="input"
-        />
-        <input
-          type="text"
-          name="skills"
-          value={formData.skills}
-          onChange={handleChange}
-          placeholder="Skills (comma separated)"
-          className="input"
-        />
-        <input
-          type="text"
-          name="location"
-          value={formData.location}
-          onChange={handleChange}
-          placeholder="Location"
-          className="input"
-        />
-        <button className="btn-primary" onClick={handlePost}>
-          Post Job
-        </button>
+    <div className="max-w-4xl mx-auto p-6">
+      {/* Job Post Form */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+        <h2 className="text-2xl font-bold mb-4 text-blue-600">🚀 Post a Job</h2>
+        <div className="grid gap-4">
+          <input
+            type="text"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            placeholder="Job Title"
+            className="input-field"
+          />
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            placeholder="Job Description"
+            rows={3}
+            className="input-field"
+          />
+          <input
+            type="text"
+            name="skills"
+            value={formData.skills}
+            onChange={handleChange}
+            placeholder="Skills (comma separated)"
+            className="input-field"
+          />
+          <input
+            type="text"
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+            placeholder="Location"
+            className="input-field"
+          />
+          <button
+            onClick={handlePost}
+            className="bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition"
+          >
+            ➕ Post Job
+          </button>
+        </div>
       </div>
 
-      <h2 className="text-xl font-bold mb-4">Job Listings</h2>
-      {jobs.map((job) => {
-        const isApplied = job.applicants.includes(user._id);
-        const isSaved = savedJobs.includes(job._id);
+      {/* Job Listings */}
+      <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">💼 Job Listings</h2>
+      {jobs.length === 0 ? (
+        <p className="text-gray-500 text-center">No jobs available.</p>
+      ) : (
+        jobs.map((job) => {
+          const isApplied = job.applicants.includes(user._id);
+          const isSaved = savedJobs.includes(job._id);
 
-        return (
-          <div key={job._id} className="bg-white p-4 rounded shadow mb-4">
-            <h3 className="text-lg font-bold">{job.title}</h3>
-            <p className="mb-1">{job.description}</p>
-            <p className="text-sm text-gray-600">Location: {job.location}</p>
-            <p className="text-sm text-gray-600 mb-2">Skills: {job.skills.join(", ")}</p>
+          return (
+            <div
+              key={job._id}
+              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow p-5 mb-4 transition hover:shadow-lg"
+            >
+              <h3 className="text-xl font-semibold text-blue-700 dark:text-blue-400 mb-1">
+                {job.title}
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 mb-2">{job.description}</p>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                📍 Location: <span className="font-medium">{job.location}</span>
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                🛠️ Skills:{" "}
+                <span className="text-gray-800 dark:text-gray-200">
+                  {job.skills.join(", ")}
+                </span>
+              </div>
 
-            <div className="flex gap-2 flex-wrap mt-2">
-              <button
-                className={`px-3 py-1 rounded text-white ${isApplied ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"}`}
-                onClick={() => handleApply(job._id)}
-                disabled={isApplied}
-              >
-                {isApplied ? "Applied" : "Apply"}
-              </button>
-
-              <button
-                className={`px-3 py-1 rounded text-white ${isSaved ? "bg-yellow-400" : "bg-yellow-500 hover:bg-yellow-600"}`}
-                onClick={() => handleSave(job._id)}
-              >
-                {isSaved ? "Saved" : "Save Job"}
-              </button>
+              <div className="flex gap-3 mt-4 flex-wrap">
+                <button
+                  disabled={isApplied}
+                  onClick={() => handleApply(job._id)}
+                  className={`px-4 py-1 rounded font-medium transition text-white ${
+                    isApplied
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700"
+                  }`}
+                >
+                  {isApplied ? "✅ Applied" : "Apply Now"}
+                </button>
+                <button
+                  onClick={() => handleSave(job._id)}
+                  className={`px-4 py-1 rounded font-medium transition text-white ${
+                    isSaved
+                      ? "bg-yellow-400"
+                      : "bg-yellow-500 hover:bg-yellow-600"
+                  }`}
+                >
+                  {isSaved ? "⭐ Saved" : "Save Job"}
+                </button>
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })
+      )}
     </div>
   );
 };

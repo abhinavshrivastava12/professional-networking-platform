@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../utils/axios";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
@@ -17,8 +17,8 @@ const UserProfile = () => {
 
   useEffect(() => {
     if (user && token) {
-      axios
-        .get(`/api/users/${user._id}`, {
+      api
+        .get(`/users/${user._id}`, {
           headers: { Authorization: token },
         })
         .then((res) => {
@@ -43,13 +43,13 @@ const UserProfile = () => {
   const handleImageUpload = async () => {
     if (!imageFile) return "";
     try {
-      const formData = new FormData();
-      formData.append("image", imageFile);
-      const res = await axios.post("/api/upload/image", formData, {
+      const fd = new FormData();
+      fd.append("image", imageFile);
+      const res = await api.post("/upload/image", fd, {
         headers: { Authorization: token },
       });
       return res.data.url;
-    } catch (err) {
+    } catch {
       toast.error("Image upload failed");
       return "";
     }
@@ -71,8 +71,8 @@ const UserProfile = () => {
       education: JSON.parse(formData.education),
     };
 
-    axios
-      .put(`/api/users/${user._id}`, payload, {
+    api
+      .put(`/users/${user._id}`, payload, {
         headers: { Authorization: token },
       })
       .then(() => toast.success("Profile updated!"))
@@ -86,11 +86,11 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-4 bg-white shadow rounded">
-      <h2 className="text-2xl font-bold mb-4 text-center">Edit Profile</h2>
+    <div className="max-w-xl mx-auto mt-10 bg-white dark:bg-gray-900 shadow p-6 rounded-xl text-gray-800 dark:text-white">
+      <h2 className="text-3xl font-bold text-center mb-6 text-blue-600">Edit Profile</h2>
 
       {preview && (
-        <div className="text-center mb-4">
+        <div className="text-center mb-6">
           <img
             src={preview}
             alt="Preview"
@@ -100,43 +100,65 @@ const UserProfile = () => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <textarea
-          name="bio"
-          value={formData.bio}
-          onChange={handleChange}
-          placeholder="Your bio"
-          className="input"
-        />
-        <input
-          name="skills"
-          value={formData.skills}
-          onChange={handleChange}
-          placeholder="Skills (comma separated)"
-          className="input"
-        />
-        <textarea
-          name="experience"
-          value={formData.experience}
-          onChange={handleChange}
-          placeholder='[{"company":"ABC","role":"Dev","from":"2022","to":"2023"}]'
-          className="input"
-        />
-        <textarea
-          name="education"
-          value={formData.education}
-          onChange={handleChange}
-          placeholder='[{"school":"XYZ","degree":"B.Tech","from":"2018","to":"2022"}]'
-          className="input"
-        />
+        <div>
+          <label className="block text-sm font-medium mb-1">Bio</label>
+          <textarea
+            name="bio"
+            value={formData.bio}
+            onChange={handleChange}
+            placeholder="Your bio"
+            className="input"
+          />
+        </div>
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          className="mt-1"
-        />
+        <div>
+          <label className="block text-sm font-medium mb-1">Skills (comma separated)</label>
+          <input
+            name="skills"
+            value={formData.skills}
+            onChange={handleChange}
+            placeholder="e.g., React, Node.js, MongoDB"
+            className="input"
+          />
+        </div>
 
-        <button type="submit" className="btn-primary w-full mt-3">
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Experience (JSON format)
+          </label>
+          <textarea
+            name="experience"
+            value={formData.experience}
+            onChange={handleChange}
+            placeholder='[{"company":"ABC","role":"Dev","from":"2022","to":"2023"}]'
+            className="input font-mono text-xs"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Education (JSON format)
+          </label>
+          <textarea
+            name="education"
+            value={formData.education}
+            onChange={handleChange}
+            placeholder='[{"school":"XYZ","degree":"B.Tech","from":"2018","to":"2022"}]'
+            className="input font-mono text-xs"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Profile Picture</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="block mt-1"
+          />
+        </div>
+
+        <button type="submit" className="btn-primary w-full mt-4">
           Save Profile
         </button>
       </form>

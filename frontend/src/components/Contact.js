@@ -16,41 +16,54 @@ const Contact = () => {
   };
 
   return (
-    <section className="py-10 px-4 bg-white max-w-3xl mx-auto">
-      <h2 className="text-3xl font-bold mb-6 text-center">Contact Us</h2>
+    <section className="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-lg mt-12">
+      <h2 className="text-4xl font-extrabold mb-8 text-center text-indigo-700 tracking-wide">
+        Contact Us
+      </h2>
+
       {sent && (
-        <div className="mb-4 p-3 bg-green-100 text-green-800 rounded">
+        <div className="mb-6 rounded-md bg-green-100 p-4 text-green-800 text-center font-semibold shadow-md animate-fadeIn">
           Thank you! We’ll get back to you soon.
         </div>
       )}
-      <form onSubmit={handleSubmit} className="space-y-4">
+
+      <form onSubmit={handleSubmit} className="space-y-6">
         <input
           type="text"
           name="name"
           value={form.name}
           onChange={handleChange}
           placeholder="Your Name"
-          className="w-full border p-2 rounded"
+          className="w-full rounded-lg border border-gray-300 p-4 text-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           required
         />
+
         <input
           type="email"
           name="email"
           value={form.email}
           onChange={handleChange}
           placeholder="Your Email"
-          className="w-full border p-2 rounded"
+          className="w-full rounded-lg border border-gray-300 p-4 text-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           required
         />
+
         <textarea
           name="message"
           value={form.message}
           onChange={handleChange}
           placeholder="Your Message"
-          className="w-full border p-2 rounded h-32"
+          rows={6}
+          className="w-full rounded-lg border border-gray-300 p-4 text-lg placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           required
-        ></textarea>
-        <button type="submit" className="btn-primary">Send Message</button>
+        />
+
+        <button
+          type="submit"
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-semibold py-4 rounded-lg shadow-lg transition-transform active:scale-95"
+        >
+          Send Message
+        </button>
       </form>
     </section>
   );

@@ -1,6 +1,5 @@
 import React from "react";
-import { HashRouter as Router, Routes, Route } from "react-router-dom";
-
+import { Routes, Route } from "react-router-dom"; // ✅ remove BrowserRouter
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
@@ -20,70 +19,27 @@ import Messages from "./components/Messages";
 
 const App = () => {
   return (
-    <Router basename="/professional-networking-platform">
-      <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors">
-        <Header />
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <UserProfile />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/connections"
-              element={
-                <ProtectedRoute>
-                  <Connections />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/feed"
-              element={
-                <ProtectedRoute>
-                  <Feed />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/jobs"
-              element={
-                <ProtectedRoute>
-                  <JobBoard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/chat"
-              element={
-                <ProtectedRoute>
-                  <ChatBox />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/messages"
-              element={
-                <ProtectedRoute>
-                  <Messages />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
+    <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors">
+      <Header />
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+          <Route path="/connections" element={<ProtectedRoute><Connections /></ProtectedRoute>} />
+          <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
+          <Route path="/jobs" element={<ProtectedRoute><JobBoard /></ProtectedRoute>} />
+          <Route path="/chat" element={<ProtectedRoute><ChatBox /></ProtectedRoute>} />
+          <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+          <Route path="*" element={<Home />} />
+        </Routes>
+      </main>
+      <Footer />
+    </div>
   );
 };
 

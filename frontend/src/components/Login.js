@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../store/userSlice";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { LockClosedIcon } from "@heroicons/react/24/solid";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -12,10 +13,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!email || !password) {
-      return toast.error("Please enter both email and password");
-    }
+    if (!email || !password) return toast.error("Please enter both email and password");
 
     try {
       const res = await dispatch(loginUser({ email, password })).unwrap();
@@ -27,27 +25,51 @@ const Login = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 bg-white shadow p-6 rounded">
-      <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          className="input"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          className="input"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit" className="btn-primary mt-2">
-          Login
-        </button>
-      </form>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
+        <div className="flex items-center justify-center mb-6">
+          <LockClosedIcon className="h-10 w-10 text-indigo-600" />
+        </div>
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Login to Your Account</h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-600">Email</label>
+            <input
+              type="email"
+              className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-600">Password</label>
+            <input
+              type="password"
+              className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded hover:bg-indigo-700 transition"
+          >
+            Sign In
+          </button>
+        </form>
+
+        <p className="text-center text-sm text-gray-500 mt-4">
+          Don’t have an account?{" "}
+          <Link to="/signup" className="text-indigo-600 hover:underline">
+            Sign up
+          </Link>
+        </p>
+      </div>
     </div>
   );
 };

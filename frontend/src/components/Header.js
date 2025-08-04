@@ -44,77 +44,116 @@ const Header = () => {
   return (
     <header className="bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-blue-600">
+        <Link to="/" className="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition">
           Global_Connect
         </Link>
 
+        {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-700 dark:text-gray-200">
           {navLinks.map((link) => (
-            <Link key={link.to} to={link.to} className="hover:text-blue-600 transition">
+            <Link
+              key={link.to}
+              to={link.to}
+              className={`hover:text-indigo-600 transition ${
+                location.pathname === link.to ? "text-indigo-600 font-semibold" : ""
+              }`}
+            >
               {link.text}
             </Link>
           ))}
 
-          <button className="relative">
-            <Bell size={20} className="hover:text-blue-600" />
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs px-1">
+          {/* Notification */}
+          <button className="relative hover:text-indigo-600 transition">
+            <Bell size={20} />
+            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full shadow">
               3
             </span>
           </button>
 
+          {/* Profile */}
           {user ? (
             <div className="relative">
               <button
-                className="flex items-center gap-1 hover:text-blue-600"
+                className="flex items-center gap-1 hover:text-indigo-600 transition"
                 onClick={() => setShowProfile(!showProfile)}
               >
                 <UserCircle size={22} />
               </button>
               {showProfile && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded shadow z-10 text-sm">
-                  <Link to="/profile" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Profile</Link>
-                  <button onClick={handleLogout} className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-red-500">
-                    Logout
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-50 border border-gray-100 dark:border-gray-700 overflow-hidden">
+                  <Link
+                    to="/profile"
+                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                  >
+                    👤 Profile
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-red-500 transition"
+                  >
+                    🚪 Logout
                   </button>
                 </div>
               )}
             </div>
           ) : (
             <>
-              <Link to="/login" className="hover:text-blue-600">Login</Link>
-              <Link to="/signup" className="hover:text-blue-600">Signup</Link>
+              <Link to="/login" className="hover:text-indigo-600 transition">Login</Link>
+              <Link to="/signup" className="hover:text-indigo-600 transition">Signup</Link>
             </>
           )}
 
-          <button onClick={() => setDark(!dark)} className="ml-3">
+          {/* Theme Toggle */}
+          <button onClick={() => setDark(!dark)} className="ml-3 hover:text-indigo-600 transition">
             {dark ? <Sun size={20} /> : <Moon size={20} />}
           </button>
         </nav>
 
-        <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden text-gray-700 dark:text-gray-200">
+        {/* Mobile Nav Button */}
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="md:hidden text-gray-700 dark:text-gray-200 text-xl"
+        >
           ☰
         </button>
       </div>
 
+      {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden px-4 py-3 space-y-2 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-100">
+        <div className="md:hidden px-4 py-4 space-y-3 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700">
           {navLinks.map((link) => (
-            <Link key={link.to} to={link.to} className="block hover:text-blue-600">
+            <Link
+              key={link.to}
+              to={link.to}
+              className={`block hover:text-indigo-600 transition ${
+                location.pathname === link.to ? "font-semibold text-indigo-600" : ""
+              }`}
+            >
               {link.text}
             </Link>
           ))}
+
           {user ? (
             <>
-              <Link to="/profile" className="block hover:text-blue-600">Profile</Link>
-              <button onClick={handleLogout} className="text-red-500 hover:underline">Logout</button>
+              <Link to="/profile" className="block hover:text-indigo-600">👤 Profile</Link>
+              <button
+                onClick={handleLogout}
+                className="text-red-500 hover:underline"
+              >
+                🚪 Logout
+              </button>
             </>
           ) : (
             <>
-              <Link to="/login" className="block hover:text-blue-600">Login</Link>
-              <Link to="/signup" className="block hover:text-blue-600">Signup</Link>
+              <Link to="/login" className="block hover:text-indigo-600">Login</Link>
+              <Link to="/signup" className="block hover:text-indigo-600">Signup</Link>
             </>
           )}
-          <button onClick={() => setDark(!dark)} className="block">
+
+          <button
+            onClick={() => setDark(!dark)}
+            className="mt-2 block hover:text-indigo-600 transition"
+          >
             {dark ? "🌞 Light Mode" : "🌙 Dark Mode"}
           </button>
         </div>
