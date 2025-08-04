@@ -26,7 +26,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
+      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md relative z-50">
         <div className="flex items-center justify-center mb-6">
           <LockClosedIcon className="h-10 w-10 text-indigo-600" />
         </div>
@@ -37,10 +37,12 @@ const Login = () => {
             <label className="block text-sm font-medium text-gray-600">Email</label>
             <input
               type="email"
+              autoComplete="off"
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
 
@@ -48,10 +50,12 @@ const Login = () => {
             <label className="block text-sm font-medium text-gray-600">Password</label>
             <input
               type="password"
+              autoComplete="off"
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
             />
           </div>
 

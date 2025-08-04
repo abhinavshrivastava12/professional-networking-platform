@@ -2,7 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import { useSelector } from "react-redux";
 
-const socket = io("http://localhost:5000"); // Or use ENV URL
+const socket = io("https://professional-networking-platform.onrender.com", {
+  transports: ["websocket"],
+  withCredentials: true,
+}); // Or use ENV URL
 
 const ChatBox = ({ receiverId }) => {
   const { user } = useSelector((state) => state.user);

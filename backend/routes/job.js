@@ -1,8 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/authMiddleware");
-const { postJob, getAllJobs, applyToJob } = require("../controllers/jobController");
-const { saveJob, getSavedJobs } = require("../controllers/jobController");
+const {
+  postJob,
+  getAllJobs,
+  applyToJob,
+  saveJob,
+  getSavedJobs
+} = require("../controllers/jobController");
+
 router.post("/", auth, postJob);
 router.get("/", auth, getAllJobs);
 router.post("/apply/:jobId", auth, applyToJob);

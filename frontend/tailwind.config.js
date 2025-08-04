@@ -1,22 +1,28 @@
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{js,jsx}"],
-
-  darkMode: 'class', // Enables dark mode via a class on <html>
-
+  darkMode: "class", // Switch theme using class
   theme: {
     extend: {
+      colors: {
+        primary: "#1e40af", // Indigo-900
+        accent: "#6366f1",  // Indigo-500 (optional)
+      },
+      fontFamily: {
+        sans: ["Inter", "ui-sans-serif", "system-ui"],
+      },
       animation: {
-        fadeIn: "fadeIn 0.5s ease-in-out",
-        fadeInSlow: "fadeIn 1s ease-in-out",
+        'slide-down': 'slideDown 0.3s ease-out',
       },
       keyframes: {
-        fadeIn: {
-          "0%": { opacity: 0 },
-          "100%": { opacity: 1 },
+        slideDown: {
+          "0%": { opacity: 0, transform: "translateY(-10px)" },
+          "100%": { opacity: 1, transform: "translateY(0)" },
         },
       },
     },
   },
-
-  plugins: [],
+  plugins: [
+    require('tailwind-scrollbar')({ nocompatible: true }), // Optional scrollbar styling
+  ],
 };

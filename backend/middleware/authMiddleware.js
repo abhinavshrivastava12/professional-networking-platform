@@ -1,4 +1,3 @@
-// 📁 middleware/auth.js
 const jwt = require("jsonwebtoken");
 
 const auth = async (req, res, next) => {
@@ -13,16 +12,17 @@ const auth = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // ✅ Check whether decoded contains user object or just id
+    // Get user id from decoded payload
     const userId = decoded?.user?.id || decoded?.id;
 
     if (!userId) {
       return res.status(401).json({ msg: "Invalid token payload" });
     }
 
-    req.user = { id: userId };
-    console.log("✅ Authenticated user ID:", userId);
+    // ✅ Attach properly as _id to match controller expectations
+    req.user = { _id: userId };
 
+    console.log("✅ Authenticated user ID:", userId);
     next();
   } catch (err) {
     console.error("❌ Auth error:", err.message);

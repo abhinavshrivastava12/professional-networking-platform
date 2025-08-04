@@ -1,3 +1,5 @@
+// src/pages/JobBoard.js
+
 import React, { useState, useEffect, useCallback } from "react";
 import api from "../utils/axios";
 import { useSelector } from "react-redux";
@@ -14,30 +16,33 @@ const JobBoard = () => {
     location: "",
   });
 
+  // ✅ Fetch all jobs + saved jobs
   const fetchJobs = useCallback(async () => {
     try {
       const res = await api.get("/jobs", {
-        headers: { Authorization: token },
+        headers: { Authorization: `Bearer ${token}` }, // ✅ FIXED
       });
       setJobs(res.data);
 
       const saved = await api.get("/jobs/saved", {
-        headers: { Authorization: token },
+        headers: { Authorization: `Bearer ${token}` }, // ✅ FIXED
       });
       setSavedJobs(saved.data.map((j) => j._id));
-    } catch {
+    } catch (err) {
       toast.error("Error loading jobs");
+      console.error("❌ Job fetch error:", err);
     }
   }, [token]);
 
   useEffect(() => {
-    fetchJobs();
-  }, [fetchJobs]);
+    if (token) fetchJobs();
+  }, [fetchJobs, token]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  // ✅ Post new job
   const handlePost = async () => {
     try {
       const jobData = {
@@ -46,38 +51,41 @@ const JobBoard = () => {
       };
 
       await api.post("/jobs", jobData, {
-        headers: { Authorization: token },
+        headers: { Authorization: `Bearer ${token}` }, // ✅ FIXED
       });
 
       toast.success("✅ Job posted!");
       setFormData({ title: "", description: "", skills: "", location: "" });
       fetchJobs();
-    } catch {
+    } catch (err) {
       toast.error("Error posting job");
+      console.error("❌ Job post error:", err);
     }
   };
 
   const handleApply = async (jobId) => {
     try {
       const res = await api.post(`/jobs/apply/${jobId}`, {}, {
-        headers: { Authorization: token },
+        headers: { Authorization: `Bearer ${token}` }, // ✅ FIXED
       });
-      toast.success(res.data.msg);
+      toast.success(res.data.msg || "Applied!");
       fetchJobs();
     } catch (err) {
-      toast.error(err.response.data.msg || "Failed to apply");
+      toast.error(err.response?.data?.msg || "Failed to apply");
+      console.error("❌ Apply error:", err);
     }
   };
 
   const handleSave = async (jobId) => {
     try {
       const res = await api.put(`/jobs/save/${jobId}`, {}, {
-        headers: { Authorization: token },
+        headers: { Authorization: `Bearer ${token}` }, // ✅ FIXED
       });
-      toast.success(res.data.msg);
+      toast.success(res.data.msg || "Saved!");
       fetchJobs();
-    } catch {
+    } catch (err) {
       toast.error("Error saving job");
+      console.error("❌ Save error:", err);
     }
   };
 
@@ -93,7 +101,7 @@ const JobBoard = () => {
             value={formData.title}
             onChange={handleChange}
             placeholder="Job Title"
-            className="input-field"
+            className="input"
           />
           <textarea
             name="description"
@@ -101,7 +109,7 @@ const JobBoard = () => {
             onChange={handleChange}
             placeholder="Job Description"
             rows={3}
-            className="input-field"
+            className="input"
           />
           <input
             type="text"
@@ -109,7 +117,7 @@ const JobBoard = () => {
             value={formData.skills}
             onChange={handleChange}
             placeholder="Skills (comma separated)"
-            className="input-field"
+            className="input"
           />
           <input
             type="text"
@@ -117,7 +125,7 @@ const JobBoard = () => {
             value={formData.location}
             onChange={handleChange}
             placeholder="Location"
-            className="input-field"
+            className="input"
           />
           <button
             onClick={handlePost}

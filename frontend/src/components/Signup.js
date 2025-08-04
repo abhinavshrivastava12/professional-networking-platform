@@ -36,33 +36,40 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 shadow-lg rounded-xl p-8 animate-fadeIn">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 shadow-lg rounded-xl p-8 animate-fadeIn relative z-50">
         <h2 className="text-3xl font-bold text-center text-blue-600 mb-6">Create Account</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
             name="name"
+            autoComplete="off"
             placeholder="Full Name"
             value={userData.name}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            required
           />
           <input
             type="email"
             name="email"
+            autoComplete="off"
             placeholder="Email"
             value={userData.email}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            required
           />
           <input
             type="password"
             name="password"
+            autoComplete="off"
             placeholder="Password"
             value={userData.password}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            required
           />
+
           <button
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded transition"

@@ -1,10 +1,11 @@
+// ✅ src/store/userSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// ✅ For CRA, use process.env.REACT_APP_*
-const API = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+// 🔁 Replace with your actual backend base URL
+const API = "https://professional-networking-platform.onrender.com/api";
 
-// Async Thunks
+// 🔐 Register User
 export const registerUser = createAsyncThunk(
   "user/register",
   async (userData, thunkAPI) => {
@@ -17,12 +18,14 @@ export const registerUser = createAsyncThunk(
   }
 );
 
+// 🔐 Login User
 export const loginUser = createAsyncThunk(
   "user/login",
   async (credentials, thunkAPI) => {
     try {
       const res = await axios.post(`${API}/auth/login`, credentials);
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user)); // ✅ save user
       return res.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data?.msg || "Login failed");
@@ -30,20 +33,26 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// Slice
+// 🔁 Slice
 const userSlice = createSlice({
   name: "user",
   initialState: {
-    user: null,
-    token: localStorage.getItem("token"),
+    user: JSON.parse(localStorage.getItem("user")) || null,
+    token: localStorage.getItem("token") || null,
     loading: false,
     error: null,
   },
   reducers: {
+    // ✅ Restore login on refresh
+    loginUserSuccess: (state, action) => {
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+    },
     logout: (state) => {
       state.user = null;
       state.token = null;
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
     },
   },
   extraReducers: (builder) => {
@@ -76,5 +85,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { logout } = userSlice.actions;
+export const { logout, loginUserSuccess } = userSlice.actions;
 export default userSlice.reducer;

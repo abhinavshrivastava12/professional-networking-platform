@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import api from "../utils/axios"; // Make sure this has the correct baseURL
+import api from "../utils/axios";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
@@ -15,7 +15,7 @@ const Feed = () => {
   const fetchFeed = useCallback(async () => {
     try {
       const res = await api.get("/posts/feed", {
-        headers: { Authorization: token },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setPosts(res.data);
     } catch (err) {
@@ -38,7 +38,7 @@ const Feed = () => {
         const formData = new FormData();
         formData.append("image", image);
         const res = await api.post("/upload/image", formData, {
-          headers: { Authorization: token },
+          headers: { Authorization: `Bearer ${token}` },
         });
         imageUrl = res.data.url;
       }
@@ -46,7 +46,7 @@ const Feed = () => {
       await api.post(
         "/posts",
         { content, image: imageUrl },
-        { headers: { Authorization: token } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       toast.success("Post created!");
@@ -65,7 +65,7 @@ const Feed = () => {
   const handleLike = async (id) => {
     try {
       await api.put(`/posts/like/${id}`, {}, {
-        headers: { Authorization: token },
+        headers: { Authorization: `Bearer ${token}` },
       });
       fetchFeed();
     } catch {
@@ -77,7 +77,7 @@ const Feed = () => {
     if (!comment) return;
     try {
       await api.post(`/posts/comment/${postId}`, { text: comment }, {
-        headers: { Authorization: token },
+        headers: { Authorization: `Bearer ${token}` },
       });
       fetchFeed();
     } catch {
@@ -88,7 +88,7 @@ const Feed = () => {
   const handleRepost = async (postId) => {
     try {
       await api.post(`/posts/repost/${postId}`, {}, {
-        headers: { Authorization: token },
+        headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Reposted!");
       fetchFeed();
@@ -116,12 +116,12 @@ const Feed = () => {
       <div ref={topRef} />
 
       {/* Create Post */}
-      <div className="bg-white p-6 rounded-xl shadow-md mb-6">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-6">
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="What's on your mind?"
-          className="w-full border border-gray-300 rounded-lg p-4 text-lg resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg p-4 text-lg resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           rows={3}
         />
         <input
@@ -155,14 +155,14 @@ const Feed = () => {
         posts.map((post) => (
           <div
             key={post._id}
-            className="bg-white rounded-xl p-5 shadow-md mb-6 border border-gray-200"
+            className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-md mb-6 border border-gray-200 dark:border-gray-700"
           >
             <div className="flex items-center justify-between mb-3">
-              <div className="font-semibold text-indigo-700 text-lg">
+              <div className="font-semibold text-indigo-700 dark:text-indigo-400 text-lg">
                 {post.userId?.name || "Unknown User"}
               </div>
             </div>
-            <p className="text-gray-800 whitespace-pre-wrap mb-3">{post.content}</p>
+            <p className="text-gray-800 dark:text-gray-100 whitespace-pre-wrap mb-3">{post.content}</p>
             {post.image && (
               <img
                 src={post.image}
@@ -171,7 +171,7 @@ const Feed = () => {
               />
             )}
 
-            <div className="flex gap-6 text-gray-600 text-sm mb-4">
+            <div className="flex gap-6 text-gray-600 dark:text-gray-300 text-sm mb-4">
               <button
                 onClick={() => handleLike(post._id)}
                 className="flex items-center gap-1 hover:text-indigo-600 transition"
@@ -192,9 +192,9 @@ const Feed = () => {
               {post.comments.map((c, i) => (
                 <div
                   key={i}
-                  className="text-gray-700 text-sm border border-gray-100 p-2 rounded-lg bg-gray-50"
+                  className="text-gray-700 dark:text-gray-200 text-sm border border-gray-100 dark:border-gray-700 p-2 rounded-lg bg-gray-50 dark:bg-gray-900"
                 >
-                  <span className="font-semibold text-indigo-600">
+                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">
                     {c.userId?.name || "User"}
                   </span>
                   : {c.text}
@@ -215,7 +215,7 @@ const CommentBox = ({ postId, handleComment }) => {
     <div className="flex gap-3 mt-3">
       <input
         type="text"
-        className="flex-1 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+        className="flex-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
         placeholder="Add a comment..."
         value={text}
         onChange={(e) => setText(e.target.value)}

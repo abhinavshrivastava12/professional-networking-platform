@@ -4,10 +4,13 @@ const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String },
+    password: { type: String }, // hashed password
+
     profilePic: { type: String, default: "" },
-    bio: { type: String },
-    resume: { type: String },
+    bannerPic: [{ type: String }], // make sure it's array only if required
+
+    bio: String,
+    resume: String,
 
     experience: [
       {
@@ -28,28 +31,19 @@ const userSchema = new mongoose.Schema(
     ],
 
     skills: [String],
-    bannerPic: [String],
 
-    // ✅ Corrected field names
+    // Social connections
     connections: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
+      { type: mongoose.Schema.Types.ObjectId, ref: "User" }
     ],
 
     connectionRequests: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
+      { type: mongoose.Schema.Types.ObjectId, ref: "User" }
     ],
 
+    // 💼 Saved jobs
     savedJobs: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Job",
-      },
+      { type: mongoose.Schema.Types.ObjectId, ref: "Job" }
     ],
   },
   { timestamps: true }

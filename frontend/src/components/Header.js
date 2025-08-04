@@ -8,18 +8,24 @@ const Header = () => {
   const { user } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const location = useLocation();
-  const [dark, setDark] = useState(false);
+
+  const [dark, setDark] = useState(() => localStorage.getItem("theme") === "dark");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
+  // Theme setup
   useEffect(() => {
+    const root = document.documentElement;
     if (dark) {
-      document.documentElement.classList.add("dark");
+      root.classList.add("dark");
+      localStorage.setItem("theme", "dark");
     } else {
-      document.documentElement.classList.remove("dark");
+      root.classList.remove("dark");
+      localStorage.setItem("theme", "light");
     }
   }, [dark]);
 
+  // Close menus on route change
   useEffect(() => {
     setMobileOpen(false);
     setShowProfile(false);
@@ -28,6 +34,7 @@ const Header = () => {
   const handleLogout = () => {
     dispatch(logout());
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
   };
 
   const navLinks = [
@@ -44,7 +51,11 @@ const Header = () => {
   return (
     <header className="bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition">
+        {/* Logo */}
+        <Link
+          to="/"
+          className="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition"
+        >
           Global_Connect
         </Link>
 
@@ -63,24 +74,25 @@ const Header = () => {
           ))}
 
           {/* Notification */}
-          <button className="relative hover:text-indigo-600 transition">
+          <button className="relative hover:text-indigo-600 transition" title="Notifications">
             <Bell size={20} />
             <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full shadow">
               3
             </span>
           </button>
 
-          {/* Profile */}
+          {/* Profile Dropdown */}
           {user ? (
             <div className="relative">
               <button
                 className="flex items-center gap-1 hover:text-indigo-600 transition"
-                onClick={() => setShowProfile(!showProfile)}
+                onClick={() => setShowProfile((prev) => !prev)}
+                title="Profile"
               >
                 <UserCircle size={22} />
               </button>
               {showProfile && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-50 border border-gray-100 dark:border-gray-700 overflow-hidden">
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-50 border border-gray-200 dark:border-gray-700 overflow-hidden">
                   <Link
                     to="/profile"
                     className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
@@ -104,15 +116,20 @@ const Header = () => {
           )}
 
           {/* Theme Toggle */}
-          <button onClick={() => setDark(!dark)} className="ml-3 hover:text-indigo-600 transition">
+          <button
+            onClick={() => setDark(!dark)}
+            className="ml-3 hover:text-indigo-600 transition"
+            title="Toggle theme"
+          >
             {dark ? <Sun size={20} /> : <Moon size={20} />}
           </button>
         </nav>
 
-        {/* Mobile Nav Button */}
+        {/* Mobile Toggle */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           className="md:hidden text-gray-700 dark:text-gray-200 text-xl"
+          aria-label="Toggle navigation"
         >
           ☰
         </button>
@@ -120,7 +137,7 @@ const Header = () => {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden px-4 py-4 space-y-3 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700">
+        <div className="md:hidden px-4 py-4 space-y-3 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700 animate-slide-down">
           {navLinks.map((link) => (
             <Link
               key={link.to}
@@ -135,21 +152,17 @@ const Header = () => {
 
           {user ? (
             <>
-              <Link to="/profile" className="block hover:text-indigo-600">👤 Profile</Link>
-              <button
-                onClick={handleLogout}
-                className="text-red-500 hover:underline"
-              >
-                🚪 Logout
-              </button>
+              <Link to="/profile" className="block hover:text-indigo-600 transition">👤 Profile</Link>
+              <button onClick={handleLogout} className="text-red-500 hover:underline">🚪 Logout</button>
             </>
           ) : (
             <>
-              <Link to="/login" className="block hover:text-indigo-600">Login</Link>
-              <Link to="/signup" className="block hover:text-indigo-600">Signup</Link>
+              <Link to="/login" className="block hover:text-indigo-600 transition">Login</Link>
+              <Link to="/signup" className="block hover:text-indigo-600 transition">Signup</Link>
             </>
           )}
 
+          {/* Mobile Theme Toggle */}
           <button
             onClick={() => setDark(!dark)}
             className="mt-2 block hover:text-indigo-600 transition"
