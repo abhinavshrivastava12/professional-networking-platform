@@ -1,4 +1,7 @@
+// backend/routes/jobRoutes.js
 const express = require("express");
+const router = express.Router();
+const auth = require("../middleware/authMiddleware");
 const {
   postJob,
   getAllJobs,
@@ -6,14 +9,11 @@ const {
   saveJob,
   getSavedJobs
 } = require("../controllers/jobController");
-const auth = require("../middleware/authMiddleware");
 
-const router = express.Router();
-
-router.post("/", auth, postJob); // Post job
-router.get("/", getAllJobs); // View jobs
-router.post("/:jobId/apply", auth, applyToJob); // Apply job
-router.post("/:jobId/save", auth, saveJob); // Save/Unsave
-router.get("/saved", auth, getSavedJobs); // View saved
+router.post("/", auth, postJob);
+router.get("/", getAllJobs); // public view
+router.post("/apply/:jobId", auth, applyToJob);
+router.put("/save/:jobId", auth, saveJob);
+router.get("/saved", auth, getSavedJobs);
 
 module.exports = router;
