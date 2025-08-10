@@ -1,5 +1,5 @@
-// client/src/components/JobBoard.js
-import React, { useEffect, useState } from "react";
+// src/pages/JobBoard.js
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 
 const JobBoard = () => {
@@ -7,54 +7,53 @@ const JobBoard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Backend API ka base URL
+  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+
+  // Jobs fetch karne ka function, useCallback se wrap kiya hai taaki useEffect me stable reference mile
+  const fetchJobs = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API_URL}/jobs`);
+      setJobs(res.data);
+      setLoading(false);
+    } catch (err) {
+      setError("Failed to fetch jobs");
+      setLoading(false);
+    }
+  }, [API_URL]);
+
   useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const res = await axios.get("/api/jobs");
-        setJobs(res.data);
-        setLoading(false);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load jobs. Please try again.");
-        setLoading(false);
-      }
-    };
-
     fetchJobs();
-  }, []);
+  }, [fetchJobs]);  // fetchJobs ko dependency array me daala
 
-  if (loading) {
-    return <p className="text-center mt-4">Loading jobs...</p>;
-  }
-
-  if (error) {
-    return <p className="text-center text-red-500 mt-4">{error}</p>;
-  }
+  if (loading) return <p className="text-center mt-5">Loading jobs...</p>;
+  if (error) return <p className="text-center text-red-500 mt-5">{error}</p>;
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Job Listings</h2>
+    <div className="container mx-auto px-4 py-6">
+      <h1 className="text-2xl font-bold mb-4">Available Jobs</h1>
       {jobs.length === 0 ? (
-        <p>No jobs available at the moment.</p>
+        <p>No jobs available right now.</p>
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {jobs.map((job) => (
             <div
               key={job._id}
-              className="border rounded-lg shadow p-4 hover:shadow-lg transition duration-200"
+              className="bg-white shadow-md rounded-lg p-4 border hover:shadow-lg transition"
             >
-              <h3 className="text-xl font-semibold">{job.title}</h3>
+              <h2 className="text-xl font-semibold">{job.title}</h2>
               <p className="text-gray-600">{job.company}</p>
-              <p className="text-sm text-gray-500">{job.location}</p>
-              <p className="mt-2 text-gray-700">{job.description}</p>
-              <a
-                href={job.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
+              <p className="text-gray-500 text-sm">{job.location}</p>
+              <p className="mt-2">{job.description}</p>
+              <p className="mt-2 font-semibold text-green-600">
+                Salary: {job.salary || "Not specified"}
+              </p>
+              <p className="text-sm mt-1 text-gray-500">
+                Posted on: {new Date(job.createdAt).toLocaleDateString()}
+              </p>
+              <button className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
                 Apply Now
-              </a>
+              </button>
             </div>
           ))}
         </div>
