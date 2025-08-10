@@ -11,16 +11,18 @@ connectDB();
 
 const app = express();
 
-// ✅ CORS settings
+// ✅ Allowed Origins
 const allowedOrigins = [
   "https://abhinavshrivastava12.github.io", // GitHub Pages
   "http://localhost:3000",                  // Local Dev
   "https://professional-networking-platform.onrender.com" // Render frontend
 ];
 
+// ✅ CORS middleware
 app.use(
   cors({
-    origin: function (origin, callback) {
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl)
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -32,25 +34,29 @@ app.use(
   })
 );
 
-// ✅ Middleware
+// ✅ Parse incoming requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Main Routes
-app.use("/api", require("./routes"));
+// ✅ Routes
+app.use("/api", require("./routes")); // Main API routes
+app.use("/api/jobs", require("./routes/job")); // Job routes
 
-// ✅ Job Routes (directly mounted)
-app.use("/api/jobs", require("./routes/job"));
-
-// ✅ Health Check Endpoint
+// ✅ Health check
 app.get("/", (req, res) => {
   res.status(200).json({ message: "✅ API is running fine!" });
 });
 
-// ✅ Create HTTP Server
+// ✅ Error handling middleware
+app.use((err, req, res, next) => {
+  console.error("❌ Server Error:", err.stack);
+  res.status(500).json({ error: "Something went wrong on the server." });
+});
+
+// ✅ Create HTTP server
 const server = http.createServer(app);
 
-// ✅ Setup WebSocket Server (Socket.IO)
+// ✅ Setup WebSocket (Socket.IO)
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
@@ -58,10 +64,10 @@ const io = new Server(server, {
     credentials: true,
   },
   transports: ["websocket", "polling"],
-  allowEIO3: true, // optional for compatibility
+  allowEIO3: true,
 });
 
-// ✅ Socket Events
+// ✅ Socket events
 io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);
 
@@ -80,7 +86,7 @@ io.on("connection", (socket) => {
   });
 });
 
-// ✅ Start Server
+// ✅ Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server live on port ${PORT}`);

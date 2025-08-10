@@ -11,5 +11,5 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
-
+console.log("Stored token:", localStorage.getItem("token"));
 export default api;
