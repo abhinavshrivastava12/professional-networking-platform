@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
 const auth = async (req, res, next) => {
   const rawHeader = req.header("Authorization");
@@ -12,17 +13,17 @@ const auth = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Get user id from decoded payload
     const userId = decoded?.user?.id || decoded?.id;
-
     if (!userId) {
       return res.status(401).json({ msg: "Invalid token payload" });
     }
 
-    // ✅ Attach properly as _id to match controller expectations
-    req.user = { _id: userId };
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(401).json({ msg: "User not found" });
+    }
 
-    console.log("✅ Authenticated user ID:", userId);
+    req.user = user;
     next();
   } catch (err) {
     console.error("❌ Auth error:", err.message);

@@ -4,6 +4,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const { Server } = require("socket.io");
 const connectDB = require("./config/db");
+const jobRoutes = require("./routes/jobRoutes");
 
 // Load .env & connect DB
 dotenv.config();
@@ -32,11 +33,16 @@ app.use(
   })
 );
 
+// ✅ Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// ✅ Routes
+// ✅ Main Routes
 const routes = require("./routes");
 app.use("/api", routes);
+
+// ✅ Job Routes
+app.use("/api/jobs", jobRoutes);
 
 // ✅ Health Check Endpoint
 app.get("/", (req, res) => {

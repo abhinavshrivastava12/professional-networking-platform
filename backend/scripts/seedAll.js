@@ -1,5 +1,3 @@
-// seedall.js
-
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
@@ -22,13 +20,12 @@ const seedData = async () => {
 
     const password = await bcrypt.hash("test123", 10);
 
-    // Seed Users
+    // Seed Users with roles
     const users = await User.insertMany([
-      { name: "Alice", email: "alice@test.com", password },
-      { name: "Bob", email: "bob@test.com", password },
-      { name: "Charlie", email: "charlie@test.com", password },
+      { name: "Alice", email: "alice@test.com", password, role: "employer" },
+      { name: "Bob", email: "bob@test.com", password, role: "user" },
+      { name: "Charlie", email: "charlie@test.com", password, role: "employer" },
     ]);
-
     console.log("✅ Users seeded");
 
     // Seed Posts
@@ -38,21 +35,21 @@ const seedData = async () => {
     ]);
     console.log("✅ Posts seeded");
 
-    // Seed Jobs
+    // Seed Jobs (only employers can post)
     await Job.insertMany([
       {
         title: "Frontend Developer",
         description: "React, Tailwind, API integration",
         skills: ["React", "Tailwind", "REST API"],
         location: "Remote",
-        postedBy: users[2]._id,
+        postedBy: users[0]._id,
       },
       {
         title: "Backend Developer",
         description: "Node.js, MongoDB, Express",
         skills: ["Node.js", "MongoDB", "Express"],
         location: "Bangalore",
-        postedBy: users[0]._id,
+        postedBy: users[2]._id,
       },
     ]);
     console.log("✅ Jobs seeded");

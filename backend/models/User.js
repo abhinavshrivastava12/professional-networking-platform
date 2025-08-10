@@ -45,6 +45,13 @@ const userSchema = new mongoose.Schema(
     savedJobs: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Job" }
     ],
+
+    // User role (important for job posting rights)
+    role: {
+      type: String,
+      enum: ["user", "employer", "admin"],
+      default: "user"
+    }
   },
   { timestamps: true }
 );
