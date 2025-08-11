@@ -1,16 +1,33 @@
+// server/routes/job.js
+
 const express = require("express");
 const router = express.Router();
 const Job = require("../models/Job");
-const Application = require("../models/Application");
-const { verifyToken, verifyAdmin } = require("../middleware/authMiddleware");
+const jwt = require("jsonwebtoken");
 
-// 📌 POST a new job (Admin only)
-router.post("/", verifyToken, verifyAdmin, async (req, res) => {
+// Middleware to verify token
+function authenticateToken(req, res, next) {
+  const token = req.header("Authorization")?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Access denied. No token provided." });
+  }
+
   try {
-    const { title, description, company, location, salary } = req.body;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "mock-secret");
+    req.user = decoded;
+    next();
+  } catch (err) {
+    res.status(400).json({ message: "Invalid token." });
+  }
+}
+
+// 📌 Create a new job
+router.post("/", authenticateToken, async (req, res) => {
+  try {
+    const { title, description, company, location } = req.body;
 
     if (!title || !description || !company || !location) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({ message: "Please fill all required fields" });
     }
 
     const newJob = new Job({
@@ -18,77 +35,71 @@ router.post("/", verifyToken, verifyAdmin, async (req, res) => {
       description,
       company,
       location,
-      salary,
-      postedBy: req.user.id,
+      postedBy: req.user.id, // from token
     });
 
     await newJob.save();
     res.status(201).json({ message: "Job posted successfully", job: newJob });
-  } catch (error) {
-    console.error("Error posting job:", error);
-    res.status(500).json({ message: "Server error" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 
-// 📌 GET all jobs
+// 📌 Get all jobs
 router.get("/", async (req, res) => {
   try {
     const jobs = await Job.find().sort({ createdAt: -1 });
-    res.status(200).json(jobs);
-  } catch (error) {
-    console.error("Error fetching jobs:", error);
-    res.status(500).json({ message: "Server error" });
+    res.json(jobs);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 
-// 📌 GET single job by ID
+// 📌 Get a single job by ID
 router.get("/:id", async (req, res) => {
   try {
     const job = await Job.findById(req.params.id);
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
-    }
-    res.status(200).json(job);
-  } catch (error) {
-    console.error("Error fetching job:", error);
-    res.status(500).json({ message: "Server error" });
+    if (!job) return res.status(404).json({ message: "Job not found" });
+    res.json(job);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 
-// 📌 Apply for a job (User only)
-router.post("/:id/apply", verifyToken, async (req, res) => {
+// 📌 Update a job
+router.put("/:id", authenticateToken, async (req, res) => {
   try {
-    const jobId = req.params.id;
+    const job = await Job.findById(req.params.id);
+    if (!job) return res.status(404).json({ message: "Job not found" });
 
-    const job = await Job.findById(jobId);
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
+    if (job.postedBy.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized to update this job" });
     }
 
-    if (req.user.role === "admin") {
-      return res.status(403).json({ message: "Admins cannot apply for jobs" });
-    }
-
-    const existingApplication = await Application.findOne({
-      jobId,
-      userId: req.user.id,
+    const updatedJob = await Job.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
     });
 
-    if (existingApplication) {
-      return res.status(400).json({ message: "You have already applied" });
+    res.json({ message: "Job updated successfully", job: updatedJob });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+// 📌 Delete a job
+router.delete("/:id", authenticateToken, async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id);
+    if (!job) return res.status(404).json({ message: "Job not found" });
+
+    if (job.postedBy.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized to delete this job" });
     }
 
-    const application = new Application({
-      jobId,
-      userId: req.user.id,
-      status: "Pending",
-    });
-
-    await application.save();
-    res.status(201).json({ message: "Applied successfully", application });
-  } catch (error) {
-    console.error("Error applying for job:", error);
-    res.status(500).json({ message: "Server error" });
+    await Job.findByIdAndDelete(req.params.id);
+    res.json({ message: "Job deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 
