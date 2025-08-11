@@ -2,9 +2,11 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import api from "../utils/axios";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const Feed = () => {
   const { token } = useSelector((state) => state.user);
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
@@ -12,18 +14,39 @@ const Feed = () => {
   const [loading, setLoading] = useState(false);
   const topRef = useRef();
 
+  // ✅ Attach token globally to Axios
+  useEffect(() => {
+    if (token) {
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    } else {
+      delete api.defaults.headers.common["Authorization"];
+    }
+
+    // ✅ Global 401 handler
+    const interceptor = api.interceptors.response.use(
+      (res) => res,
+      (err) => {
+        if (err.response?.status === 401) {
+          toast.error("Session expired. Please login again.");
+          navigate("/login");
+        }
+        return Promise.reject(err);
+      }
+    );
+
+    return () => api.interceptors.response.eject(interceptor);
+  }, [token, navigate]);
+
   // ✅ Fetch posts
   const fetchFeed = useCallback(async () => {
     try {
-      const res = await api.get("/posts/feed", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get("/posts/feed");
       setPosts(res.data || []);
     } catch (err) {
       console.error("❌ Feed Fetch Error:", err);
       toast.error("Failed to load feed");
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     if (token) fetchFeed();
@@ -40,19 +63,12 @@ const Feed = () => {
         const formData = new FormData();
         formData.append("image", image);
         const res = await api.post("/upload/image", formData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
+          headers: { "Content-Type": "multipart/form-data" },
         });
         imageUrl = res.data.url;
       }
 
-      await api.post(
-        "/posts",
-        { content, image: imageUrl },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.post("/posts", { content, image: imageUrl });
 
       toast.success("🎉 Post created!");
       setContent("");
@@ -70,11 +86,9 @@ const Feed = () => {
 
   const handleLike = async (id) => {
     try {
-      await api.put(`/posts/like/${id}`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.put(`/posts/like/${id}`);
       fetchFeed();
-    } catch (err) {
+    } catch {
       toast.error("Error liking post");
     }
   };
@@ -82,23 +96,19 @@ const Feed = () => {
   const handleComment = async (postId, comment) => {
     if (!comment) return;
     try {
-      await api.post(`/posts/comment/${postId}`, { text: comment }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.post(`/posts/comment/${postId}`, { text: comment });
       fetchFeed();
-    } catch (err) {
+    } catch {
       toast.error("Error commenting");
     }
   };
 
   const handleRepost = async (postId) => {
     try {
-      await api.post(`/posts/repost/${postId}`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.post(`/posts/repost/${postId}`);
       toast.success("🔁 Reposted!");
       fetchFeed();
-    } catch (err) {
+    } catch {
       toast.error("Repost failed");
     }
   };
