@@ -1,15 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const { upload } = require("../config/cloudinary");
-const auth = require("../middleware/authMiddleware");
+const { verifyToken } = require("../middleware/authMiddleware"); // ✅ Correct import
 
 // ✅ Image Upload
-router.post("/image", auth, upload.single("image"), (req, res) => {
+router.post("/image", verifyToken, upload.single("image"), (req, res) => {
   res.json({ url: req.file.path });
 });
 
 // ✅ Resume Upload (PDF)
-router.post("/resume", auth, upload.single("resume"), (req, res) => {
+router.post("/resume", verifyToken, upload.single("resume"), (req, res) => {
   if (!req.file || !req.file.path.endsWith(".pdf")) {
     return res.status(400).json({ error: "Only PDF resumes allowed" });
   }

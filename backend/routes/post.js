@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const auth = require("../middleware/authMiddleware");
+const { verifyToken } = require("../middleware/authMiddleware"); // ✅ fix import
 const {
   getFeed,
   createPost,
@@ -10,18 +10,18 @@ const {
 } = require("../controllers/postController");
 
 // ✅ GET feed
-router.get("/feed", auth, getFeed);
+router.get("/feed", verifyToken, getFeed);
 
 // ✅ POST new post
-router.post("/", auth, createPost);
+router.post("/", verifyToken, createPost);
 
 // ✅ Like post
-router.put("/like/:postId", auth, likePost);
+router.put("/like/:postId", verifyToken, likePost);
 
 // ✅ Comment
-router.post("/comment/:postId", auth, commentPost);
+router.post("/comment/:postId", verifyToken, commentPost);
 
 // ✅ Repost
-router.post("/repost/:postId", auth, repost);
+router.post("/repost/:postId", verifyToken, repost);
 
 module.exports = router;

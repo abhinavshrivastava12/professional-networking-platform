@@ -9,7 +9,7 @@ router.post("/login", (req, res) => {
     return res.status(400).json({ msg: "Missing credentials" });
   }
 
-  // Accept any email/password (mock login)
+  // Mock login
   return res.status(200).json({
     user: { name: "Demo User", email },
     token: "mock-token-123",

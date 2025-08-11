@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
+// Import all sub-routes
 const authRoutes = require("./auth");
 const userRoutes = require("./user");
 const postRoutes = require("./post");
@@ -23,7 +24,7 @@ router.get("/", (req, res) => {
   res.status(200).json({ message: "✅ API is live and running fine!" });
 });
 
-// ✅ 404 fallback handler (for unmatched API routes)
+// ✅ 404 fallback handler
 router.use("*", (req, res) => {
   res.status(404).json({ error: "❌ API route not found" });
 });

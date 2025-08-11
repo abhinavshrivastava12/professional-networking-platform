@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const auth = require("../middleware/authMiddleware");
+const { verifyToken } = require("../middleware/authMiddleware"); // ✅ fix import
 const {
   sendRequest,
   acceptRequest,
@@ -9,15 +9,15 @@ const {
 } = require("../controllers/connectionController");
 
 // ✅ Send a connection request
-router.post("/send", auth, sendRequest);
+router.post("/send", verifyToken, sendRequest);
 
 // ✅ Accept a connection request
-router.post("/accept", auth, acceptRequest);
+router.post("/accept", verifyToken, acceptRequest);
 
 // ✅ Get all connected users
-router.get("/list", auth, getConnections);
+router.get("/list", verifyToken, getConnections);
 
 // ✅ Get all pending connection requests
-router.get("/pending", auth, getPendingRequests);
+router.get("/pending", verifyToken, getPendingRequests);
 
 module.exports = router;

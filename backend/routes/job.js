@@ -65,12 +65,10 @@ router.post("/:id/apply", verifyToken, async (req, res) => {
       return res.status(404).json({ message: "Job not found" });
     }
 
-    // Prevent admin from applying
     if (req.user.role === "admin") {
       return res.status(403).json({ message: "Admins cannot apply for jobs" });
     }
 
-    // Check if already applied
     const existingApplication = await Application.findOne({
       jobId,
       userId: req.user.id,
