@@ -1,7 +1,6 @@
-// ✅ src/App.js
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { loginUserSuccess } from "./store/userSlice";
 
 // Components
@@ -28,17 +27,17 @@ const App = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user);
 
-  // 🔐 Restore login from localStorage
+  // 🔐 Restore login from localStorage on app start
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const user = localStorage.getItem("user");
+    const userData = localStorage.getItem("user");
 
-    try {
-      if (token && user) {
-        dispatch(loginUserSuccess({ token, user: JSON.parse(user) }));
+    if (token && userData) {
+      try {
+        dispatch(loginUserSuccess({ token, user: JSON.parse(userData) }));
+      } catch (err) {
+        console.error("❌ Error restoring user from localStorage", err);
       }
-    } catch (err) {
-      console.error("❌ Error restoring user from localStorage", err);
     }
   }, [dispatch]);
 
@@ -55,20 +54,71 @@ const App = () => {
       <Header />
       <main className="flex-grow">
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+
+          {/* Auth Routes */}
+          <Route
+            path="/login"
+            element={!user ? <Login /> : <Navigate to="/feed" replace />}
+          />
+          <Route
+            path="/signup"
+            element={!user ? <Signup /> : <Navigate to="/feed" replace />}
+          />
 
           {/* Protected Routes */}
-          <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-          <Route path="/connections" element={<ProtectedRoute><Connections /></ProtectedRoute>} />
-          <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
-          <Route path="/jobs" element={<ProtectedRoute><JobBoard /></ProtectedRoute>} />
-          <Route path="/chat" element={<ProtectedRoute><ChatBox /></ProtectedRoute>} />
-          <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <UserProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/connections"
+            element={
+              <ProtectedRoute>
+                <Connections />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/feed"
+            element={
+              <ProtectedRoute>
+                <Feed />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/jobs"
+            element={
+              <ProtectedRoute>
+                <JobBoard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <ChatBox />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/messages"
+            element={
+              <ProtectedRoute>
+                <Messages />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Catch-all fallback */}
           <Route path="*" element={<Home />} />

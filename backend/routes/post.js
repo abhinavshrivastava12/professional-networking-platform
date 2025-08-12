@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { verifyToken } = require("../middleware/authMiddleware"); // ✅ fix import
+const { verifyToken } = require("../middleware/authMiddleware");
 const {
   getFeed,
   createPost,
@@ -9,19 +9,19 @@ const {
   repost,
 } = require("../controllers/postController");
 
-// ✅ GET feed
+// GET /api/posts/feed - Get user feed
 router.get("/feed", verifyToken, getFeed);
 
-// ✅ POST new post
+// POST /api/posts - Create new post
 router.post("/", verifyToken, createPost);
 
-// ✅ Like post
+// PUT /api/posts/like/:postId - Like a post
 router.put("/like/:postId", verifyToken, likePost);
 
-// ✅ Comment
+// POST /api/posts/comment/:postId - Add comment
 router.post("/comment/:postId", verifyToken, commentPost);
 
-// ✅ Repost
+// POST /api/posts/repost/:postId - Repost
 router.post("/repost/:postId", verifyToken, repost);
 
 module.exports = router;

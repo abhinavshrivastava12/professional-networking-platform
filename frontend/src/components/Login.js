@@ -8,9 +8,11 @@ import { LockClosedIcon } from "@heroicons/react/24/solid";
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Form submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -20,6 +22,7 @@ const Login = () => {
     }
 
     try {
+      // Dispatch login action and unwrap promise result
       const res = await dispatch(loginUser({ email, password })).unwrap();
       toast.success(`✅ Welcome, ${res.user.name}!`);
       navigate("/feed");
@@ -40,11 +43,17 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md relative z-50">
+        {/* Icon */}
         <div className="flex items-center justify-center mb-6">
           <LockClosedIcon className="h-10 w-10 text-indigo-600" />
         </div>
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Login to Your Account</h2>
 
+        {/* Heading */}
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+          Login to Your Account
+        </h2>
+
+        {/* Login form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-600">Email</label>
@@ -80,6 +89,7 @@ const Login = () => {
           </button>
         </form>
 
+        {/* Signup link */}
         <p className="text-center text-sm text-gray-500 mt-4">
           Don’t have an account?{" "}
           <Link to="/signup" className="text-indigo-600 hover:underline">

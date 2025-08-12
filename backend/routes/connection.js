@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { verifyToken } = require("../middleware/authMiddleware"); // ✅ fix import
+const { verifyToken } = require("../middleware/authMiddleware"); // Import auth middleware
+
 const {
   sendRequest,
   acceptRequest,
@@ -8,16 +9,16 @@ const {
   getPendingRequests,
 } = require("../controllers/connectionController");
 
-// ✅ Send a connection request
+// POST /api/connections/send - Send a connection request
 router.post("/send", verifyToken, sendRequest);
 
-// ✅ Accept a connection request
+// POST /api/connections/accept - Accept a connection request
 router.post("/accept", verifyToken, acceptRequest);
 
-// ✅ Get all connected users
+// GET /api/connections/list - Get all connected users
 router.get("/list", verifyToken, getConnections);
 
-// ✅ Get all pending connection requests
+// GET /api/connections/pending - Get all pending connection requests
 router.get("/pending", verifyToken, getPendingRequests);
 
 module.exports = router;

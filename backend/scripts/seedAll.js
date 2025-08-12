@@ -8,19 +8,21 @@ const Job = require("../models/Job");
 const Message = require("../models/Message");
 
 dotenv.config();
-connectDB();
 
-const seedData = async () => {
+const seedAll = async () => {
   try {
-    // Clear old data
-    await User.deleteMany();
-    await Post.deleteMany();
-    await Job.deleteMany();
-    await Message.deleteMany();
+    await connectDB();
+
+    await Promise.all([
+      User.deleteMany(),
+      Post.deleteMany(),
+      Job.deleteMany(),
+      Message.deleteMany(),
+    ]);
+    console.log("🧹 Cleared existing data");
 
     const password = await bcrypt.hash("test123", 10);
 
-    // Seed Users with roles
     const users = await User.insertMany([
       { name: "Alice", email: "alice@test.com", password, role: "employer" },
       { name: "Bob", email: "bob@test.com", password, role: "user" },
@@ -28,14 +30,12 @@ const seedData = async () => {
     ]);
     console.log("✅ Users seeded");
 
-    // Seed Posts
     await Post.insertMany([
       { userId: users[0]._id, content: "Excited to join this platform!" },
       { userId: users[1]._id, content: "Looking for React dev roles!" },
     ]);
     console.log("✅ Posts seeded");
 
-    // Seed Jobs (only employers can post)
     await Job.insertMany([
       {
         title: "Frontend Developer",
@@ -54,27 +54,18 @@ const seedData = async () => {
     ]);
     console.log("✅ Jobs seeded");
 
-    // Seed Messages
     await Message.insertMany([
-      {
-        senderId: users[0]._id,
-        receiverId: users[1]._id,
-        text: "Hi Bob!",
-      },
-      {
-        senderId: users[1]._id,
-        receiverId: users[0]._id,
-        text: "Hey Alice!",
-      },
+      { senderId: users[0]._id, receiverId: users[1]._id, text: "Hi Bob!" },
+      { senderId: users[1]._id, receiverId: users[0]._id, text: "Hey Alice!" },
     ]);
     console.log("✅ Messages seeded");
 
     console.log("🎉 All data seeded successfully");
-    process.exit(0);
   } catch (err) {
-    console.error("❌ Seeding failed:", err);
-    process.exit(1);
+    console.error("❌ Seeding failed:", err.stack || err);
+  } finally {
+    await mongoose.disconnect();
   }
 };
 
-seedData();
+seedAll();

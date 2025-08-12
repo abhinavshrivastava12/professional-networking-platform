@@ -5,43 +5,46 @@ const connectDB = require("../config/db");
 const User = require("../models/User");
 
 dotenv.config();
-connectDB();
 
-const seedAdminUser = async () => {
+const seedUser = async () => {
   try {
-    const existingAdmin = await User.findOne({ email: "admin@network.com" });
+    await connectDB();
+
+    const adminEmail = "admin@network.com";
+    const employerEmail = "employer@network.com";
+
+    const existingAdmin = await User.findOne({ email: adminEmail });
     if (!existingAdmin) {
       const hashedPassword = await bcrypt.hash("admin123", 10);
       await User.create({
         name: "Admin User",
-        email: "admin@network.com",
+        email: adminEmail,
         password: hashedPassword,
         role: "admin",
       });
       console.log("✅ Admin user created");
     } else {
-      console.log("🟡 Admin already exists");
+      console.log("🟡 Admin user already exists");
     }
 
-    const existingEmployer = await User.findOne({ email: "employer@network.com" });
+    const existingEmployer = await User.findOne({ email: employerEmail });
     if (!existingEmployer) {
       const hashedPassword = await bcrypt.hash("employer123", 10);
       await User.create({
         name: "Employer User",
-        email: "employer@network.com",
+        email: employerEmail,
         password: hashedPassword,
         role: "employer",
       });
       console.log("✅ Employer user created");
     } else {
-      console.log("🟡 Employer already exists");
+      console.log("🟡 Employer user already exists");
     }
-
-    process.exit(0);
   } catch (err) {
-    console.error("❌ Seeding error:", err);
-    process.exit(1);
+    console.error("❌ Seeding error:", err.stack || err);
+  } finally {
+    await mongoose.disconnect();
   }
 };
 
-seedAdminUser();
+seedUser();

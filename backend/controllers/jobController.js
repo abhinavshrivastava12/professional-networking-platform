@@ -5,6 +5,7 @@ const User = require("../models/User");
 exports.postJob = async (req, res) => {
   try {
     const { title, description, skills, location } = req.body;
+
     if (!title || !description || !skills || !location) {
       return res.status(400).json({ msg: "All fields are required" });
     }
@@ -24,7 +25,7 @@ exports.postJob = async (req, res) => {
 
     res.status(201).json(job);
   } catch (err) {
-    console.error("❌ Error posting job:", err);
+    console.error("Error posting job:", err);
     res.status(500).json({ msg: "Internal Server Error" });
   }
 };
@@ -38,7 +39,7 @@ exports.getAllJobs = async (req, res) => {
       .populate("applicants", "name email");
     res.json(jobs);
   } catch (err) {
-    console.error("❌ Error fetching jobs:", err);
+    console.error("Error fetching jobs:", err);
     res.status(500).json({ msg: "Internal Server Error" });
   }
 };
@@ -59,12 +60,12 @@ exports.applyToJob = async (req, res) => {
 
     res.json({ msg: "Applied successfully" });
   } catch (err) {
-    console.error("❌ Error applying to job:", err);
+    console.error("Error applying to job:", err);
     res.status(500).json({ msg: "Internal Server Error" });
   }
 };
 
-// Save / Unsave a job
+// Save / Unsave job
 exports.saveJob = async (req, res) => {
   try {
     const jobId = req.params.jobId;
@@ -80,7 +81,7 @@ exports.saveJob = async (req, res) => {
     await user.save();
     res.json({ msg: "Job saved" });
   } catch (err) {
-    console.error("❌ Error saving job:", err);
+    console.error("Error saving job:", err);
     res.status(500).json({ msg: "Internal Server Error" });
   }
 };
@@ -91,7 +92,7 @@ exports.getSavedJobs = async (req, res) => {
     const user = await User.findById(req.user._id).populate("savedJobs");
     res.json(user.savedJobs);
   } catch (err) {
-    console.error("❌ Error fetching saved jobs:", err);
+    console.error("Error fetching saved jobs:", err);
     res.status(500).json({ msg: "Internal Server Error" });
   }
 };

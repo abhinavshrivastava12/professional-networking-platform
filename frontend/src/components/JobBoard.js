@@ -8,10 +8,10 @@ const JobBoard = ({ user }) => {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  // Backend API ka base URL
+  // Backend API base URL from env or fallback
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
-  // Jobs fetch karna
+  // Fetch jobs from backend
   const fetchJobs = useCallback(async () => {
     try {
       const res = await axios.get(`${API_URL}/jobs`);
@@ -27,7 +27,7 @@ const JobBoard = ({ user }) => {
     fetchJobs();
   }, [fetchJobs]);
 
-  // Apply job function
+  // Handle job application
   const handleApply = async (jobId) => {
     if (!user) {
       setMessage("Please login to apply for jobs.");
@@ -54,8 +54,11 @@ const JobBoard = ({ user }) => {
     }
   };
 
-  if (loading) return <p className="text-center mt-5">Loading jobs...</p>;
-  if (error) return <p className="text-center text-red-500 mt-5">{error}</p>;
+  if (loading)
+    return <p className="text-center mt-5">Loading jobs...</p>;
+
+  if (error)
+    return <p className="text-center text-red-500 mt-5">{error}</p>;
 
   return (
     <div className="container mx-auto px-4 py-6">

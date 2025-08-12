@@ -13,27 +13,23 @@ const Connections = () => {
 
   const API = process.env.REACT_APP_API_URL;
 
-  // Debounce search
+  // Debounce search input by 400ms
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 400);
     return () => clearTimeout(timer);
   }, [search]);
 
+  // Fetch users, connections, and pending requests
   const fetchData = useCallback(async () => {
     try {
-      const usersRes = await axios.get(`${API}/users`, {
-        headers: { Authorization: token },
-      });
+      const [usersRes, connRes, pendingRes] = await Promise.all([
+        axios.get(`${API}/users`, { headers: { Authorization: token } }),
+        axios.get(`${API}/connections/list`, { headers: { Authorization: token } }),
+        axios.get(`${API}/connections/pending`, { headers: { Authorization: token } }),
+      ]);
+
       setAllUsers(usersRes.data);
-
-      const connRes = await axios.get(`${API}/connections/list`, {
-        headers: { Authorization: token },
-      });
       setConnections(connRes.data.map((u) => u._id));
-
-      const pendingRes = await axios.get(`${API}/connections/pending`, {
-        headers: { Authorization: token },
-      });
       setPending(pendingRes.data.map((u) => u._id));
     } catch (err) {
       console.error("❌ Error fetching connections:", err);
@@ -45,6 +41,7 @@ const Connections = () => {
     fetchData();
   }, [fetchData]);
 
+  // Send connection request
   const handleConnect = async (toUserId) => {
     try {
       await axios.post(
@@ -60,26 +57,31 @@ const Connections = () => {
     }
   };
 
+  // Filter users based on search and exclude current user
   const filteredUsers = allUsers
     .filter((u) => u._id !== user._id)
-    .filter((u) =>
-      u.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      u.email.toLowerCase().includes(debouncedSearch.toLowerCase())
+    .filter(
+      (u) =>
+        u.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        u.email.toLowerCase().includes(debouncedSearch.toLowerCase())
     );
 
+  // Render connect button or status based on connection state
   const renderButton = (id) => {
-    if (connections.includes(id))
+    if (connections.includes(id)) {
       return (
         <span className="inline-flex items-center gap-1 text-green-600 font-semibold">
           ✅ Connected
         </span>
       );
-    if (pending.includes(id))
+    }
+    if (pending.includes(id)) {
       return (
         <span className="inline-flex items-center gap-1 text-yellow-600 font-semibold">
           ⏳ Pending
         </span>
       );
+    }
     return (
       <button
         onClick={() => handleConnect(id)}
@@ -105,9 +107,7 @@ const Connections = () => {
       />
 
       {filteredUsers.length === 0 ? (
-        <p className="text-center text-gray-500 text-lg mt-12">
-          No users found
-        </p>
+        <p className="text-center text-gray-500 text-lg mt-12">No users found</p>
       ) : (
         <div className="space-y-4">
           {filteredUsers.map((u) => (

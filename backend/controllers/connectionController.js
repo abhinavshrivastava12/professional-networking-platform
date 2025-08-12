@@ -1,30 +1,26 @@
 const User = require("../models/User");
 
-// 👉 Send connection request
+// Send connection request
 const sendRequest = async (req, res) => {
   try {
     const fromUserId = req.user.id;
     const toUserId = req.body.toUserId;
 
-    console.log("📤 sendRequest called");
-    console.log("fromUserId:", fromUserId);
-    console.log("toUserId:", toUserId);
-
     if (fromUserId === toUserId) {
       return res.status(400).json({ msg: "You cannot connect with yourself" });
     }
 
-    const toUser = await User.findById(toUserId);
-    const fromUser = await User.findById(fromUserId);
+    const [toUser, fromUser] = await Promise.all([
+      User.findById(toUserId),
+      User.findById(fromUserId),
+    ]);
 
     if (!toUser || !fromUser) {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    if (
-      toUser.connectionRequests.includes(fromUserId) ||
-      toUser.connections.includes(fromUserId)
-    ) {
+    // Check if request or connection already exists
+    if (toUser.connectionRequests.includes(fromUserId) || toUser.connections.includes(fromUserId)) {
       return res.status(400).json({ msg: "Already requested or connected" });
     }
 
@@ -33,19 +29,21 @@ const sendRequest = async (req, res) => {
 
     res.json({ msg: "Request sent" });
   } catch (err) {
-    console.error("❌ Error sending request:", err.message);
+    console.error("Error sending request:", err.message);
     res.status(500).json({ msg: "Failed to send request" });
   }
 };
 
-// 👉 Accept connection request
+// Accept connection request
 const acceptRequest = async (req, res) => {
   try {
     const currentUserId = req.user.id;
     const senderId = req.body.senderId;
 
-    const currentUser = await User.findById(currentUserId);
-    const sender = await User.findById(senderId);
+    const [currentUser, sender] = await Promise.all([
+      User.findById(currentUserId),
+      User.findById(senderId),
+    ]);
 
     if (!currentUser || !sender) {
       return res.status(404).json({ msg: "User not found" });
@@ -55,26 +53,25 @@ const acceptRequest = async (req, res) => {
       return res.status(400).json({ msg: "No such request" });
     }
 
-    // Add to connections
+    // Add connections mutually
     currentUser.connections.push(senderId);
     sender.connections.push(currentUserId);
 
-    // Remove from connectionRequests
+    // Remove senderId from currentUser's connectionRequests
     currentUser.connectionRequests = currentUser.connectionRequests.filter(
       (id) => id.toString() !== senderId
     );
 
-    await currentUser.save();
-    await sender.save();
+    await Promise.all([currentUser.save(), sender.save()]);
 
     res.json({ msg: "Request accepted" });
   } catch (err) {
-    console.error("❌ Accept Request Error:", err.message);
+    console.error("Accept Request Error:", err.message);
     res.status(500).json({ msg: "Failed to accept request" });
   }
 };
 
-// 👉 Get all accepted connections
+// Get all accepted connections
 const getConnections = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate(
@@ -83,12 +80,12 @@ const getConnections = async (req, res) => {
     );
     res.json(user.connections);
   } catch (err) {
-    console.error("❌ Fetch Connections Error:", err.message);
+    console.error("Fetch Connections Error:", err.message);
     res.status(500).json({ msg: "Failed to fetch connections" });
   }
 };
 
-// 👉 Get pending requests (received)
+// Get pending requests received
 const getPendingRequests = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate(
@@ -97,7 +94,7 @@ const getPendingRequests = async (req, res) => {
     );
     res.json(user.connectionRequests);
   } catch (err) {
-    console.error("❌ Fetch Pending Requests Error:", err.message);
+    console.error("Fetch Pending Requests Error:", err.message);
     res.status(500).json({ msg: "Failed to fetch pending requests" });
   }
 };

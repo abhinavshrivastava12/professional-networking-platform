@@ -7,14 +7,16 @@ import { useNavigate } from "react-router-dom";
 const Feed = () => {
   const { token } = useSelector((state) => state.user);
   const navigate = useNavigate();
+
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
+
   const topRef = useRef();
 
-  // ✅ Attach token globally to Axios
+  // Set authorization header & global 401 interceptor
   useEffect(() => {
     if (token) {
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -22,7 +24,6 @@ const Feed = () => {
       delete api.defaults.headers.common["Authorization"];
     }
 
-    // ✅ Global 401 handler
     const interceptor = api.interceptors.response.use(
       (res) => res,
       (err) => {
@@ -37,7 +38,7 @@ const Feed = () => {
     return () => api.interceptors.response.eject(interceptor);
   }, [token, navigate]);
 
-  // ✅ Fetch posts
+  // Fetch posts from backend
   const fetchFeed = useCallback(async () => {
     try {
       const res = await api.get("/posts/feed");
@@ -48,17 +49,21 @@ const Feed = () => {
     }
   }, []);
 
+  // Fetch posts on token change
   useEffect(() => {
     if (token) fetchFeed();
   }, [fetchFeed, token]);
 
-  // ✅ Post creation
+  // Handle post submission with optional image upload
   const handlePost = async () => {
-    if (!content && !image) return toast.error("Post content or image required");
+    if (!content.trim() && !image) {
+      return toast.error("Post content or image required");
+    }
     setLoading(true);
 
     try {
       let imageUrl = "";
+
       if (image) {
         const formData = new FormData();
         formData.append("image", image);
@@ -68,7 +73,7 @@ const Feed = () => {
         imageUrl = res.data.url;
       }
 
-      await api.post("/posts", { content, image: imageUrl });
+      await api.post("/posts", { content: content.trim(), image: imageUrl });
 
       toast.success("🎉 Post created!");
       setContent("");
@@ -84,39 +89,51 @@ const Feed = () => {
     }
   };
 
+  // Like post handler
   const handleLike = async (id) => {
     try {
       await api.put(`/posts/like/${id}`);
       fetchFeed();
-    } catch {
+    } catch (err) {
+      console.error("Like error:", err);
       toast.error("Error liking post");
     }
   };
 
+  // Comment post handler
   const handleComment = async (postId, comment) => {
-    if (!comment) return;
+    if (!comment.trim()) return;
     try {
-      await api.post(`/posts/comment/${postId}`, { text: comment });
+      await api.post(`/posts/comment/${postId}`, { text: comment.trim() });
       fetchFeed();
-    } catch {
+    } catch (err) {
+      console.error("Comment error:", err);
       toast.error("Error commenting");
     }
   };
 
+  // Repost handler
   const handleRepost = async (postId) => {
     try {
       await api.post(`/posts/repost/${postId}`);
       toast.success("🔁 Reposted!");
       fetchFeed();
-    } catch {
+    } catch (err) {
+      console.error("Repost error:", err);
       toast.error("Repost failed");
     }
   };
 
+  // Handle image input change & set preview
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    setImage(file);
-    if (file) setPreview(URL.createObjectURL(file));
+    if (file) {
+      setImage(file);
+      setPreview(URL.createObjectURL(file));
+    } else {
+      setImage(null);
+      setPreview("");
+    }
   };
 
   if (!token) {
@@ -139,6 +156,7 @@ const Feed = () => {
           placeholder="What's on your mind?"
           className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg p-4 text-lg resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           rows={3}
+          maxLength={1000}
         />
         <input
           type="file"
@@ -178,7 +196,11 @@ const Feed = () => {
                 {post.userId?.name || "Unknown User"}
               </div>
             </div>
-            <p className="text-gray-800 dark:text-gray-100 whitespace-pre-wrap mb-3">{post.content}</p>
+
+            <p className="text-gray-800 dark:text-gray-100 whitespace-pre-wrap mb-3">
+              {post.content}
+            </p>
+
             {post.image && (
               <img
                 src={post.image}
@@ -191,12 +213,15 @@ const Feed = () => {
               <button
                 onClick={() => handleLike(post._id)}
                 className="flex items-center gap-1 hover:text-indigo-600 transition"
+                aria-label={`Like post by ${post.userId?.name || "user"}`}
               >
                 👍 <span>{post.likes?.length || 0}</span>
               </button>
+
               <button
                 onClick={() => handleRepost(post._id)}
                 className="flex items-center gap-1 hover:text-indigo-600 transition"
+                aria-label="Repost this post"
               >
                 🔁 Repost
               </button>
@@ -227,6 +252,13 @@ const Feed = () => {
 const CommentBox = ({ postId, handleComment }) => {
   const [text, setText] = useState("");
 
+  // Submit comment handler
+  const submitComment = () => {
+    if (!text.trim()) return;
+    handleComment(postId, text.trim());
+    setText("");
+  };
+
   return (
     <div className="flex gap-3 mt-3">
       <input
@@ -236,20 +268,14 @@ const CommentBox = ({ postId, handleComment }) => {
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter" && text.trim()) {
-            handleComment(postId, text.trim());
-            setText("");
-          }
+          if (e.key === "Enter") submitComment();
         }}
+        aria-label="Add a comment"
       />
       <button
-        onClick={() => {
-          if (text.trim()) {
-            handleComment(postId, text.trim());
-            setText("");
-          }
-        }}
+        onClick={submitComment}
         className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg px-4 py-2 shadow-md transition-transform active:scale-95"
+        aria-label="Send comment"
       >
         Send
       </button>

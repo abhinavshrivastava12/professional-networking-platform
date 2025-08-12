@@ -7,16 +7,19 @@ import { toast } from "react-toastify";
 const Signup = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const [userData, setUserData] = useState({
     name: "",
     email: "",
     password: "",
   });
 
+  // Handle form input changes
   const handleChange = (e) => {
     setUserData({ ...userData, [e.target.name]: e.target.value });
   };
 
+  // Form submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { name, email, password } = userData;
@@ -40,6 +43,7 @@ const Signup = () => {
         <h2 className="text-3xl font-bold text-center text-blue-600 mb-6">
           Create Account
         </h2>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
@@ -51,6 +55,7 @@ const Signup = () => {
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             required
           />
+
           <input
             type="email"
             name="email"
@@ -61,6 +66,7 @@ const Signup = () => {
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             required
           />
+
           <input
             type="password"
             name="password"
@@ -71,6 +77,7 @@ const Signup = () => {
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             required
           />
+
           <button
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-medium transition"
@@ -78,6 +85,7 @@ const Signup = () => {
             Sign Up
           </button>
         </form>
+
         <p className="mt-4 text-sm text-center text-gray-600 dark:text-gray-300">
           Already have an account?{" "}
           <Link to="/login" className="text-blue-600 hover:underline">

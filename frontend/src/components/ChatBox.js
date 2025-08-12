@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import { useSelector } from "react-redux";
 
+// Initialize socket outside component to keep single connection
 const socket = io("https://professional-networking-platform.onrender.com", {
-  transports: ["websocket"],
+  transports: ["websocket", "polling"],
   withCredentials: true,
-}); // Or use ENV URL
+});
 
 const ChatBox = ({ receiverId }) => {
   const { user } = useSelector((state) => state.user);
@@ -13,42 +14,64 @@ const ChatBox = ({ receiverId }) => {
   const [messages, setMessages] = useState([]);
   const bottomRef = useRef(null);
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom when messages update
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Setup socket listeners
+  // Setup socket listeners and join room on user id change
   useEffect(() => {
-    if (user?._id) {
-      socket.emit("join", user._id);
-    }
+    if (!user?._id) return;
 
+    // Join user's private room
+    socket.emit("join", user._id);
+
+    // Listen for incoming messages
     socket.on("receive_message", (data) => {
       setMessages((prev) => [
         ...prev,
-        { text: data.text, sender: "them", from: data.senderId, timestamp: Date.now() },
+        {
+          text: data.text,
+          sender: "them",
+          from: data.senderId,
+          timestamp: Date.now(),
+        },
       ]);
+    });
+
+    // Connection error handling for debugging
+    socket.on("connect_error", (err) => {
+      console.error("Socket connect error:", err);
+    });
+    socket.on("connect_timeout", () => {
+      console.error("Socket connect timeout");
     });
 
     return () => {
       socket.off("receive_message");
+      socket.off("connect_error");
+      socket.off("connect_timeout");
+      socket.disconnect();
     };
-  }, [user._id]);
+  }, [user?._id]);
 
-  // Send message
+  // Send message function
   const send = () => {
     if (!msg.trim()) return;
+
     const messageData = {
       senderId: user._id,
       receiverId,
       text: msg,
     };
+
     socket.emit("send_message", messageData);
+
     setMessages((prev) => [
       ...prev,
       { text: msg, sender: "me", from: user._id, timestamp: Date.now() },
     ]);
+
     setMsg("");
   };
 
@@ -69,7 +92,6 @@ const ChatBox = ({ receiverId }) => {
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <span className="text-2xl">💬</span> Chat
         </h2>
-        {/* Placeholder for user info or online status */}
         <div className="text-sm opacity-75">You</div>
       </div>
 
@@ -153,7 +175,6 @@ const ChatBox = ({ receiverId }) => {
           className="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-3 shadow-lg transition-transform active:scale-95"
           aria-label="Send Message"
         >
-          {/* Send Icon */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6 rotate-90"
