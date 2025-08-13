@@ -13,17 +13,12 @@ const Feed = () => {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fetchingPosts, setFetchingPosts] = useState(false);
 
   const topRef = useRef();
 
-  // Set authorization header & global 401 interceptor
+  // Setup 401 interceptor only once (on mount)
   useEffect(() => {
-    if (token) {
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    } else {
-      delete api.defaults.headers.common["Authorization"];
-    }
-
     const interceptor = api.interceptors.response.use(
       (res) => res,
       (err) => {
@@ -36,23 +31,31 @@ const Feed = () => {
     );
 
     return () => api.interceptors.response.eject(interceptor);
-  }, [token, navigate]);
+  }, [navigate]);
 
   // Fetch posts from backend
   const fetchFeed = useCallback(async () => {
+    if (!token) return;
+
+    setFetchingPosts(true);
     try {
-      const res = await api.get("/posts/feed");
+      // Pass token per request instead of global header
+      const res = await api.get("/posts/feed", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setPosts(res.data || []);
     } catch (err) {
       console.error("❌ Feed Fetch Error:", err);
       toast.error("Failed to load feed");
+    } finally {
+      setFetchingPosts(false);
     }
-  }, []);
+  }, [token]);
 
   // Fetch posts on token change
   useEffect(() => {
-    if (token) fetchFeed();
-  }, [fetchFeed, token]);
+    fetchFeed();
+  }, [fetchFeed]);
 
   // Handle post submission with optional image upload
   const handlePost = async () => {
@@ -68,12 +71,19 @@ const Feed = () => {
         const formData = new FormData();
         formData.append("image", image);
         const res = await api.post("/upload/image", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: { 
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
         });
         imageUrl = res.data.url;
       }
 
-      await api.post("/posts", { content: content.trim(), image: imageUrl });
+      await api.post(
+        "/posts",
+        { content: content.trim(), image: imageUrl },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       toast.success("🎉 Post created!");
       setContent("");
@@ -92,7 +102,9 @@ const Feed = () => {
   // Like post handler
   const handleLike = async (id) => {
     try {
-      await api.put(`/posts/like/${id}`);
+      await api.put(`/posts/like/${id}`, null, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       fetchFeed();
     } catch (err) {
       console.error("Like error:", err);
@@ -104,7 +116,11 @@ const Feed = () => {
   const handleComment = async (postId, comment) => {
     if (!comment.trim()) return;
     try {
-      await api.post(`/posts/comment/${postId}`, { text: comment.trim() });
+      await api.post(
+        `/posts/comment/${postId}`,
+        { text: comment.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       fetchFeed();
     } catch (err) {
       console.error("Comment error:", err);
@@ -115,7 +131,11 @@ const Feed = () => {
   // Repost handler
   const handleRepost = async (postId) => {
     try {
-      await api.post(`/posts/repost/${postId}`);
+      await api.post(
+        `/posts/repost/${postId}`,
+        null,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       toast.success("🔁 Reposted!");
       fetchFeed();
     } catch (err) {
@@ -124,13 +144,24 @@ const Feed = () => {
     }
   };
 
-  // Handle image input change & set preview
+  // Handle image input change & set preview (with cleanup)
+  useEffect(() => {
+    // Cleanup previous preview URL on unmount or when preview changes
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (preview) URL.revokeObjectURL(preview);
       setImage(file);
       setPreview(URL.createObjectURL(file));
     } else {
+      if (preview) URL.revokeObjectURL(preview);
       setImage(null);
       setPreview("");
     }
@@ -157,17 +188,20 @@ const Feed = () => {
           className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg p-4 text-lg resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           rows={3}
           maxLength={1000}
+          disabled={loading}
         />
         <input
           type="file"
           onChange={handleImageChange}
           className="mt-3"
           accept="image/*"
+          disabled={loading}
+          aria-label="Upload an image for your post"
         />
         {preview && (
           <img
             src={preview}
-            alt="preview"
+            alt="Preview"
             className="mt-3 max-h-64 w-full object-cover rounded-lg shadow-md"
           />
         )}
@@ -177,13 +211,16 @@ const Feed = () => {
           className={`mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow-lg transition-transform active:scale-95 ${
             loading ? "opacity-70 cursor-not-allowed" : ""
           }`}
+          aria-disabled={loading}
         >
           {loading ? "Posting..." : "Post"}
         </button>
       </div>
 
       {/* 📝 Posts List */}
-      {posts.length === 0 ? (
+      {fetchingPosts ? (
+        <div className="text-center text-gray-500 mt-10">Loading posts...</div>
+      ) : posts.length === 0 ? (
         <div className="text-center text-gray-500 mt-10">No posts to show.</div>
       ) : (
         posts.map((post) => (
@@ -204,7 +241,7 @@ const Feed = () => {
             {post.image && (
               <img
                 src={post.image}
-                alt="Post"
+                alt={`Post by ${post.userId?.name || "user"}`}
                 className="rounded-lg max-h-72 w-full object-cover mb-4 shadow-sm"
               />
             )}
