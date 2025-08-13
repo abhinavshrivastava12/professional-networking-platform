@@ -5,24 +5,24 @@ const dotenv = require("dotenv");
 const { Server } = require("socket.io");
 const connectDB = require("./config/db");
 
-// Load .env & connect DB
+// Load environment variables and connect to DB
 dotenv.config();
 connectDB();
 
 const app = express();
 
-// ✅ Allowed Origins
+// Allowed frontend origins
 const allowedOrigins = [
-  "https://abhinavshrivastava12.github.io", // GitHub Pages
-  "http://localhost:3000",                  // Local Dev
-  "https://professional-networking-platform.onrender.com" // Render frontend
+  "https://abhinavshrivastava12.github.io",  // GitHub Pages frontend
+  "http://localhost:3000",                   // Local development frontend
+  "https://professional-networking-platform.onrender.com"  // Render frontend
 ];
 
-// ✅ CORS middleware
+// Setup CORS middleware for REST API
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl)
+      // Allow requests with no origin (e.g. curl, mobile apps)
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -34,29 +34,29 @@ app.use(
   })
 );
 
-// ✅ Parse incoming requests
+// Parse JSON and URL-encoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Routes
-app.use("/api", require("./routes")); // Main API routes
-app.use("/api/jobs", require("./routes/job")); // Job routes
+// Setup API routes
+app.use("/api", require("./routes"));
+app.use("/api/jobs", require("./routes/job"));
 
-// ✅ Health check
+// Health check endpoint
 app.get("/", (req, res) => {
   res.status(200).json({ message: "✅ API is running fine!" });
 });
 
-// ✅ Error handling middleware
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error("❌ Server Error:", err.stack);
   res.status(500).json({ error: "Something went wrong on the server." });
 });
 
-// ✅ Create HTTP server
+// Create HTTP server
 const server = http.createServer(app);
 
-// ✅ Setup WebSocket (Socket.IO)
+// Setup Socket.IO with CORS and transport config
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
@@ -67,7 +67,7 @@ const io = new Server(server, {
   allowEIO3: true,
 });
 
-// ✅ Socket events
+// Socket.IO events
 io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);
 
@@ -86,7 +86,7 @@ io.on("connection", (socket) => {
   });
 });
 
-// ✅ Start server
+// Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server live on port ${PORT}`);
